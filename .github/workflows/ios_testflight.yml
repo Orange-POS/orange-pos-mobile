@@ -1,0 +1,237 @@
+name: iOS TestFlight
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: false
+
+jobs:
+  testflight:
+    name: Build and Upload TestFlight
+    runs-on: macos-latest
+    environment: testflight
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Show build tools
+        run: |
+          flutter --version
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Validate required secrets
+        env:
+          CERTIFICATE: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
+          API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          for value in \
+            "$CERTIFICATE" \
+            "$CERTIFICATE_PASSWORD" \
+            "$PROFILE" \
+            "$TEAM_ID" \
+            "$BUNDLE_ID" \
+            "$API_KEY_ID" \
+            "$ISSUER_ID" \
+            "$PRIVATE_KEY"
+          do
+            if [ -z "$value" ]; then
+              echo "A required TestFlight secret is missing."
+              exit 1
+            fi
+          done
+
+      - name: Install signing assets
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.TEMP_KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH="$RUNNER_TEMP/build_certificate.p12"
+          PROFILE_PATH="$RUNNER_TEMP/build_profile.mobileprovision"
+          PROFILE_PLIST="$RUNNER_TEMP/profile.plist"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          echo -n "$CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
+          echo -n "$PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          security import "$CERTIFICATE_PATH" \
+            -P "$CERTIFICATE_PASSWORD" \
+            -A \
+            -t cert \
+            -f pkcs12 \
+            -k "$KEYCHAIN_PATH"
+
+          security list-keychain -d user -s "$KEYCHAIN_PATH"
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "$KEYCHAIN_PASSWORD" \
+            "$KEYCHAIN_PATH"
+
+          security cms -D -i "$PROFILE_PATH" > "$PROFILE_PLIST"
+
+          PROFILE_UUID=$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :UUID" \
+              "$PROFILE_PLIST"
+          )
+
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+
+          cp "$PROFILE_PATH" \
+            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
+
+      - name: Create export options
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
+        run: |
+          PROFILE_NAME=$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :Name" \
+              "$RUNNER_TEMP/profile.plist"
+          )
+
+          cat > ios/ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store-connect</string>
+            <key>teamID</key>
+            <string>$APPLE_TEAM_ID</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>signingCertificate</key>
+            <string>Apple Distribution</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>$IOS_BUNDLE_ID</key>
+              <string>$PROFILE_NAME</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Configure manual signing
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
+        run: |
+          PROFILE_NAME=$(
+            /usr/libexec/PlistBuddy \
+              -c "Print :Name" \
+              "$RUNNER_TEMP/profile.plist"
+          )
+
+          export PROFILE_NAME
+
+          ruby <<'RUBY'
+          project_file = "ios/Runner.xcodeproj/project.pbxproj"
+          profile_name = ENV.fetch("PROFILE_NAME")
+          team_id = ENV.fetch("APPLE_TEAM_ID")
+          bundle_id = ENV.fetch("IOS_BUNDLE_ID")
+
+          content = File.read(project_file)
+
+          content.gsub!(
+            "CODE_SIGN_STYLE = Automatic;",
+            "CODE_SIGN_STYLE = Manual;"
+          )
+
+          content.gsub!(
+            '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";',
+            '"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "Apple Distribution";'
+          )
+
+          content.gsub!(
+            /(CODE_SIGN_STYLE = Manual;\n)(?!\s*DEVELOPMENT_TEAM)/,
+            "\\1				DEVELOPMENT_TEAM = #{team_id};\n"
+          )
+
+          content.gsub!(
+            /(PRODUCT_BUNDLE_IDENTIFIER = #{Regexp.escape(bundle_id)};\n)(?!\s*PROVISIONING_PROFILE_SPECIFIER)/,
+            "\\1				PROVISIONING_PROFILE_SPECIFIER = \"#{profile_name}\";\n"
+          )
+
+          File.write(project_file, content)
+          RUBY
+
+      - name: Build signed IPA
+        run: |
+          flutter build ipa \
+            --release \
+            --build-number "${{ github.run_number }}" \
+            --export-options-plist=ios/ExportOptions.plist
+
+      - name: Find IPA
+        run: |
+          IPA_PATH=$(find "$PWD/build" -name "*.ipa" -type f | head -n 1)
+
+          if [ -z "$IPA_PATH" ]; then
+            echo "No IPA file was generated."
+            exit 1
+          fi
+
+          echo "IPA_PATH=$IPA_PATH" >> "$GITHUB_ENV"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: signed-ios-ipa
+          path: ${{ env.IPA_PATH }}
+          retention-days: 3
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+
+      - name: Install Fastlane
+        run: gem install fastlane
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          IOS_BUNDLE_ID: ${{ secrets.IOS_BUNDLE_ID }}
+          IPA_PATH: ${{ env.IPA_PATH }}
+        run: fastlane ios beta
+        working-directory: ios
+
+      - name: Delete temporary keychain
+        if: always()
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.TEMP_KEYCHAIN_PASSWORD }}
+        run: |
+          security delete-keychain \
+            "$RUNNER_TEMP/app-signing.keychain-db" || true
