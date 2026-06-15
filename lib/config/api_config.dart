@@ -14,4 +14,7 @@ class ApiConfig {
 
   static const String productArchiveEndpoint =
     '/mupi/mobile/api/products/archive';
+
+    static const String pingEndpoint =
+    '/mupi/mobile/api/ping';
 }
