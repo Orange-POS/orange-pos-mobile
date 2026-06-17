@@ -1,0 +1,1 @@
+from . import test_mobile_pos_api_contract

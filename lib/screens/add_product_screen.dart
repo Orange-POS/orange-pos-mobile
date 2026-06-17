@@ -1,5 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../models/product_references.dart';
+import '../models/product_tax.dart';
+import '../services/analytics_service.dart';
+import '../services/api_client.dart';
 import '../services/product_service.dart';
 
 class AddProductScreen extends StatefulWidget {
@@ -15,24 +21,27 @@ class AddProductScreen extends StatefulWidget {
   });
 
   @override
-  State<AddProductScreen> createState() =>
-      _AddProductScreenState();
+  State<AddProductScreen> createState() => _AddProductScreenState();
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  final TextEditingController nameController =
-      TextEditingController();
-  final TextEditingController priceController =
-      TextEditingController();
-
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+  final AnalyticsService analyticsService = AnalyticsService();
   final ProductService productService = ProductService();
 
-  String selectedTax = 'Default';
-  String selectedPosCategory = 'Not assigned';
-  String selectedProductCategory = 'Not assigned';
+  ProductReferences references = const ProductReferences();
 
+  int? selectedTaxId;
+  bool isLoadingReferences = true;
   bool isSaving = false;
   String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    loadReferences();
+  }
 
   @override
   void dispose() {
@@ -41,9 +50,54 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
+  Future<void> loadReferences() async {
+    try {
+      final loadedReferences = await productService.loadProductReferences(
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      final uniqueTaxes = _uniqueTaxesFrom(loadedReferences.taxes);
+
+      final defaultTaxId = loadedReferences.defaultTaxIds.isNotEmpty
+          ? loadedReferences.defaultTaxIds.first
+          : null;
+
+      final hasDefaultTax =
+          defaultTaxId != null &&
+          uniqueTaxes.any((tax) => tax.id == defaultTaxId);
+
+      setState(() {
+        references = ProductReferences(
+          defaultTaxIds: loadedReferences.defaultTaxIds,
+          taxes: uniqueTaxes,
+        );
+        selectedTaxId = hasDefaultTax ? defaultTaxId : null;
+        isLoadingReferences = false;
+      });
+    } catch (error) {
+      debugPrint('Product references failed to load: $error');
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        references = const ProductReferences();
+        selectedTaxId = null;
+        isLoadingReferences = false;
+      });
+    }
+  }
+
   Future<void> saveProduct() async {
     final name = nameController.text.trim();
     final price = double.tryParse(priceController.text.trim());
+    final safeTaxId = _safeSelectedTaxId();
 
     if (name.isEmpty) {
       setState(() {
@@ -65,13 +119,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
-      final createdProduct =
-          await productService.createProduct(
+      final createdProduct = await productService.createProduct(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
         barcode: widget.barcode,
         name: name,
         price: price,
+        taxIds: safeTaxId == null ? null : [safeTaxId],
+      );
+
+      unawaited(
+        analyticsService.trackEvent(
+          authToken: widget.authToken,
+          backendUrl: widget.backendUrl,
+          eventName: 'product_added',
+          screen: 'add_product',
+          metadata: {
+            'barcode': widget.barcode,
+            'product_id': createdProduct.id,
+            'tax_id': safeTaxId,
+          },
+        ),
       );
 
       if (!mounted) {
@@ -84,18 +152,58 @@ class _AddProductScreenState extends State<AddProductScreen> {
         return;
       }
 
+      final createError = error is ApiClientException
+          ? error.userMessage
+          : error.toString().replaceFirst('Exception: ', '');
+
+      unawaited(
+        analyticsService.trackError(
+          authToken: widget.authToken,
+          backendUrl: widget.backendUrl,
+          errorType: 'api_error',
+          screen: 'add_product',
+          message: createError,
+          details: error.toString(),
+        ),
+      );
+
       setState(() {
         isSaving = false;
-        errorMessage =
-            'Could not create the product. Please try again.';
+        errorMessage = createError;
       });
 
       debugPrint('Product creation failed: $error');
     }
   }
 
+  List<ProductTax> _uniqueTaxesFrom(List<ProductTax> taxes) {
+    final seenIds = <int>{};
+
+    return taxes.where((tax) {
+      return seenIds.add(tax.id);
+    }).toList();
+  }
+
+  List<ProductTax> _uniqueTaxes() {
+    return _uniqueTaxesFrom(references.taxes);
+  }
+
+  int? _safeSelectedTaxId() {
+    final selectedId = selectedTaxId;
+
+    if (selectedId == null) {
+      return null;
+    }
+
+    final taxExists = _uniqueTaxes().any((tax) => tax.id == selectedId);
+
+    return taxExists ? selectedId : null;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final referenceFieldsDisabled = isSaving || isLoadingReferences;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -117,18 +225,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   const CircleAvatar(
                     radius: 21,
                     backgroundColor: Colors.black12,
-                    child: Icon(
-                      Icons.person_outline,
-                      color: Colors.black,
-                    ),
+                    child: Icon(Icons.person_outline, color: Colors.black),
                   ),
                 ],
               ),
               const SizedBox(height: 36),
-              const _FieldLabel(
-                label: 'Product Name',
-                secondary: 'Required',
-              ),
+              const _FieldLabel(label: 'Product Name', secondary: 'Required'),
               TextField(
                 controller: nameController,
                 enabled: !isSaving,
@@ -139,15 +241,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const _FieldLabel(
-                label: 'Product Price',
-                secondary: 'Required',
-              ),
+              const _FieldLabel(label: 'Product Price', secondary: 'Required'),
               TextField(
                 controller: priceController,
                 enabled: !isSaving,
-                keyboardType:
-                    const TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
                 decoration: const InputDecoration(
@@ -156,99 +254,45 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              const _FieldLabel(
-                label: 'Tax',
-                secondary: 'Default',
+              _FieldLabel(
+                label: 'Sales Tax',
+                secondary: isLoadingReferences ? 'Loading...' : 'Default',
               ),
-              DropdownButtonFormField<String>(
-                initialValue: selectedTax,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Default',
+              DropdownButtonFormField<int?>(
+                initialValue: _safeSelectedTaxId(),
+                decoration: const InputDecoration(border: OutlineInputBorder()),
+                items: [
+                  const DropdownMenuItem<int?>(
+                    value: null,
                     child: Text('Default'),
                   ),
-                ],
-                onChanged: isSaving
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          setState(() {
-                            selectedTax = value;
-                          });
-                        }
-                      },
-              ),
-              const SizedBox(height: 32),
-              const _FieldLabel(label: 'POS Category'),
-              DropdownButtonFormField<String>(
-                initialValue: selectedPosCategory,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Not assigned',
-                    child: Text('Not assigned'),
+                  ..._uniqueTaxes().map(
+                    (tax) => DropdownMenuItem<int?>(
+                      value: tax.id,
+                      child: Text(tax.name),
+                    ),
                   ),
                 ],
-                onChanged: isSaving
+                onChanged: referenceFieldsDisabled
                     ? null
                     : (value) {
-                        if (value != null) {
-                          setState(() {
-                            selectedPosCategory = value;
-                          });
-                        }
-                      },
-              ),
-              const SizedBox(height: 20),
-              const _FieldLabel(label: 'Product Category'),
-              DropdownButtonFormField<String>(
-                initialValue: selectedProductCategory,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                ),
-                items: const [
-                  DropdownMenuItem(
-                    value: 'Not assigned',
-                    child: Text('Not assigned'),
-                  ),
-                ],
-                onChanged: isSaving
-                    ? null
-                    : (value) {
-                        if (value != null) {
-                          setState(() {
-                            selectedProductCategory = value;
-                          });
-                        }
+                        setState(() {
+                          selectedTaxId = value;
+                        });
                       },
               ),
               if (errorMessage != null) ...[
                 const SizedBox(height: 16),
-                Text(
-                  errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                ),
+                Text(errorMessage!, style: const TextStyle(color: Colors.red)),
               ],
               const SizedBox(height: 50),
               _ActionButton(
-                label: isSaving ? 'Saving...' : 'Add Product',
-                icon: isSaving ? null : Icons.add,
+                label: isSaving ? 'Saving...' : 'Add New Product',
+                icon: isSaving ? null : Icons.add_circle_outline,
                 filled: true,
                 onPressed: isSaving ? null : saveProduct,
               ),
               const SizedBox(height: 12),
-              _ActionButton(
-                label: 'Cancel',
-                filled: false,
-                onPressed: isSaving
-                    ? null
-                    : () => Navigator.pop(context),
-              ),
             ],
           ),
         ),
@@ -261,10 +305,7 @@ class _FieldLabel extends StatelessWidget {
   final String label;
   final String? secondary;
 
-  const _FieldLabel({
-    required this.label,
-    this.secondary,
-  });
+  const _FieldLabel({required this.label, this.secondary});
 
   @override
   Widget build(BuildContext context) {
@@ -277,10 +318,7 @@ class _FieldLabel extends StatelessWidget {
           if (secondary != null)
             Text(
               secondary!,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.black54,
-              ),
+              style: const TextStyle(fontSize: 12, color: Colors.black54),
             ),
         ],
       ),
@@ -306,42 +344,37 @@ class _ActionButton extends StatelessWidget {
     final child = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        if (icon != null) ...[
-          Icon(icon, size: 18),
-          const SizedBox(width: 8),
-        ],
+        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
         Text(label),
       ],
     );
 
-    return Center(
-      child: SizedBox(
-        width: 245,
-        height: 44,
-        child: filled
-            ? FilledButton(
-                onPressed: onPressed,
-                style: FilledButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: Colors.black38,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: filled
+          ? FilledButton(
+              onPressed: onPressed,
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: Colors.black38,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: child,
-              )
-            : OutlinedButton(
-                onPressed: onPressed,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: child,
               ),
-      ),
+              child: child,
+            )
+          : OutlinedButton(
+              onPressed: onPressed,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: child,
+            ),
     );
   }
 }

@@ -46,9 +46,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       ),
       body: Stack(
         children: [
-          MobileScanner(
-            onDetect: handleBarcode,
-          ),
+          MobileScanner(onDetect: handleBarcode),
           Center(
             child: Container(
               width: 280,
@@ -65,10 +63,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
             child: Text(
               'Point your camera at the product barcode',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
         ],

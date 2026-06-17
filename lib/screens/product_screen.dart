@@ -1,11 +1,9 @@
-import 'dart:convert';
-import 'dart:typed_data';
+
 
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 import 'update_price_screen.dart';
-import 'update_stock_screen.dart';
 import 'edit_product_screen.dart';
 
 class ProductScreen extends StatefulWidget {
@@ -25,9 +23,7 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  
-  final TextEditingController nameController =
-      TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
   late Product product;
   bool isSaving = false;
@@ -66,11 +62,13 @@ class _ProductScreenState extends State<ProductScreen> {
     });
   }
 
-  Future<void> openUpdateStock() async {
-    final updatedProduct = await Navigator.push<Product>(
+
+
+  Future<void> openEditProduct() async {
+    final result = await Navigator.push<Object?>(
       context,
       MaterialPageRoute(
-        builder: (context) => UpdateStockScreen(
+        builder: (context) => EditProductScreen(
           product: product,
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
@@ -78,67 +76,20 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || updatedProduct == null) {
+    if (!mounted || result == null) {
       return;
     }
 
-    setState(() {
-      product = updatedProduct;
-    });
-  }
-
-  
-
-  Uint8List? decodeProductImage() {
-    if (!product.hasImage) {
-      return null;
-    }
-
-    try {
-      final value = product.imageBase64.contains(',')
-          ? product.imageBase64.split(',').last
-          : product.imageBase64;
-
-      return base64Decode(value);
-    } catch (_) {
-      return null;
+    if (result is Product) {
+      setState(() {
+        product = result;
+      });
     }
   }
-
-  Future<void> openEditProduct() async {
-  final result = await Navigator.push<Object?>(
-    context,
-    MaterialPageRoute(
-      builder: (context) => EditProductScreen(
-        product: product,
-        authToken: widget.authToken,
-        backendUrl: widget.backendUrl,
-      ),
-    ),
-  );
-
-  if (!mounted || result == null) {
-    return;
-  }
-
-  if (result == 'archived') {
-    Navigator.pop(context);
-    return;
-  }
-
-  if (result is Product) {
-    setState(() {
-      product = result;
-    });
-  }
-}
-
-
-
 
   @override
   Widget build(BuildContext context) {
-    final imageBytes = decodeProductImage();
+   
 
     return PopScope(
       canPop: false,
@@ -155,19 +106,16 @@ class _ProductScreenState extends State<ProductScreen> {
               const _ProductHeader(),
               Expanded(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.fromLTRB(34, 28, 34, 24),
+                  padding: const EdgeInsets.fromLTRB(34, 28, 34, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Column(
-                              crossAxisAlignment:
-                                  CrossAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   product.name,
@@ -188,64 +136,27 @@ class _ProductScreenState extends State<ProductScreen> {
                                   value: product.formattedPrice,
                                 ),
                                 _ProductValue(
-                                  label: 'QTY',
-                                  value: product.formattedStock,
+                                  label: 'Sales Tax',
+                                  value: product.taxLabel,
                                 ),
                               ],
                             ),
                           ),
-                          const SizedBox(width: 18),
-                          Container(
-                            width: 105,
-                            height: 105,
-                            color: const Color(0xFFE0E0E0),
-                            child: imageBytes == null
-                                ? const Icon(
-                                    Icons.image_outlined,
-                                    size: 36,
-                                  )
-                                : Image.memory(
-                                    imageBytes,
-                                    fit: BoxFit.cover,
-                                  ),
-                          ),
+                        
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Audit',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'Audit history is not available yet.',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      
                       const SizedBox(height: 36),
+
+                      const SizedBox(height: 28),
                       _ProductButton(
                         icon: Icons.edit_outlined,
                         label: 'Update Price',
-                        onPressed:
-                            isSaving ? null : openUpdatePrice,
+                        onPressed: isSaving ? null : openUpdatePrice,
                       ),
                       const SizedBox(height: 12),
                       _ProductButton(
-                        icon: Icons.add,
-                        label: 'Add Stock',
-                        onPressed:
-                            isSaving ? null : openUpdateStock,
-                      ),
-                      const SizedBox(height: 12),
-                      _ProductButton(
-                        icon: Icons.auto_fix_high,
-                        label: 'Edit Product',
+                        icon: Icons.edit,
+                        label: 'Edit Name & Tax',
                         onPressed: isSaving ? null : openEditProduct,
                       ),
                     ],
@@ -282,10 +193,7 @@ class _ProductHeader extends StatelessWidget {
             backgroundColor: Colors.black12,
             child: IconButton(
               onPressed: () {},
-              icon: const Icon(
-                Icons.person_outline,
-                color: Colors.black,
-              ),
+              icon: const Icon(Icons.person_outline, color: Colors.black),
             ),
           ),
         ],
@@ -298,10 +206,7 @@ class _ProductValue extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ProductValue({
-    required this.label,
-    required this.value,
-  });
+  const _ProductValue({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -310,15 +215,9 @@ class _ProductValue extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 14),
-          ),
+          Text(label, style: const TextStyle(fontSize: 14)),
           const SizedBox(height: 3),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 17),
-          ),
+          Text(value, style: const TextStyle(fontSize: 17)),
         ],
       ),
     );

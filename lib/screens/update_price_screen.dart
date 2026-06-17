@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
+import '../services/analytics_service.dart';
+import '../services/api_client.dart';
 import '../services/product_service.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
@@ -16,17 +20,26 @@ class UpdatePriceScreen extends StatefulWidget {
   });
 
   @override
-  State<UpdatePriceScreen> createState() =>
-      _UpdatePriceScreenState();
+  State<UpdatePriceScreen> createState() => _UpdatePriceScreenState();
 }
 
 class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   final ProductService productService = ProductService();
-  final TextEditingController priceController =
-      TextEditingController();
+  final AnalyticsService analyticsService = AnalyticsService();
+
+  late final TextEditingController priceController;
 
   bool isSaving = false;
   String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    priceController = TextEditingController(
+      text: widget.product.formattedPrice,
+    );
+  }
 
   @override
   void dispose() {
@@ -35,8 +48,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   }
 
   Future<void> savePrice() async {
-    final newPrice =
-        double.tryParse(priceController.text.trim());
+    final newPrice = double.tryParse(priceController.text.trim());
 
     if (newPrice == null || newPrice < 0) {
       setState(() {
@@ -51,12 +63,25 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
     });
 
     try {
-      final updatedProduct =
-          await productService.updateProductPrice(
+      final updatedProduct = await productService.updateProductPrice(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
         product: widget.product,
         price: newPrice.toString(),
+      );
+
+      unawaited(
+        analyticsService.trackEvent(
+          authToken: widget.authToken,
+          backendUrl: widget.backendUrl,
+          eventName: 'price_updated',
+          screen: 'update_price',
+          metadata: {
+            'product_id': updatedProduct.id,
+            'old_price': widget.product.price,
+            'new_price': newPrice,
+          },
+        ),
       );
 
       if (!mounted) {
@@ -69,11 +94,27 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         return;
       }
 
+      final updateError = error is ApiClientException
+          ? error.userMessage
+          : error.toString().replaceFirst('Exception: ', '');
+
+      unawaited(
+        analyticsService.trackError(
+          authToken: widget.authToken,
+          backendUrl: widget.backendUrl,
+          errorType: 'api_error',
+          screen: 'update_price',
+          message: updateError,
+          details: error.toString(),
+        ),
+      );
+
       setState(() {
         isSaving = false;
-        errorMessage =
-            'Could not update the price. Please try again.';
+        errorMessage = updateError;
       });
+
+      debugPrint('Price update failed: $error');
     }
   }
 
@@ -125,24 +166,20 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                       TextField(
                         controller: priceController,
                         autofocus: false,
-                        keyboardType:
-                            const TextInputType.numberWithOptions(
+                        keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
                         decoration: InputDecoration(
                           hintText: 'New Price',
-                          contentPadding:
-                              const EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 12,
                             vertical: 14,
                           ),
                           border: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius:
-                                BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(6),
                             borderSide: const BorderSide(
                               color: Colors.black54,
                             ),
@@ -153,9 +190,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                         const SizedBox(height: 12),
                         Text(
                           errorMessage!,
-                          style: const TextStyle(
-                            color: Colors.red,
-                          ),
+                          style: const TextStyle(color: Colors.red),
                         ),
                       ],
                       const Spacer(),
@@ -164,21 +199,18 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                           width: 245,
                           height: 44,
                           child: FilledButton.icon(
-                            onPressed:
-                                isSaving ? null : savePrice,
+                            onPressed: isSaving ? null : savePrice,
                             style: FilledButton.styleFrom(
                               backgroundColor: Colors.black,
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
                             icon: isSaving
                                 ? const SizedBox.square(
                                     dimension: 17,
-                                    child:
-                                        CircularProgressIndicator(
+                                    child: CircularProgressIndicator(
                                       strokeWidth: 2,
                                       color: Colors.white,
                                     ),
@@ -188,9 +220,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                                     size: 18,
                                   ),
                             label: Text(
-                              isSaving
-                                  ? 'Saving...'
-                                  : 'Save Price Change',
+                              isSaving ? 'Saving...' : 'Save Price',
                             ),
                           ),
                         ),
@@ -210,8 +240,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                                 color: Colors.black54,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(5),
+                                borderRadius: BorderRadius.circular(5),
                               ),
                             ),
                             child: const Text('Cancel'),

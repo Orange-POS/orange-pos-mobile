@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class BarcodeNotFoundScreen extends StatelessWidget {
   final String barcode;
 
-  const BarcodeNotFoundScreen({
-    super.key,
-    required this.barcode,
-  });
+  const BarcodeNotFoundScreen({super.key, required this.barcode});
 
   @override
   Widget build(BuildContext context) {
@@ -20,16 +17,10 @@ class BarcodeNotFoundScreen extends StatelessWidget {
               const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Barcode Not Found',
-                    style: TextStyle(fontSize: 20),
-                  ),
+                  Text('Barcode Not Found', style: TextStyle(fontSize: 20)),
                   CircleAvatar(
                     backgroundColor: Colors.black12,
-                    child: Icon(
-                      Icons.person_outline,
-                      color: Colors.black,
-                    ),
+                    child: Icon(Icons.person_outline, color: Colors.black),
                   ),
                 ],
               ),
@@ -56,10 +47,7 @@ class BarcodeNotFoundScreen extends StatelessWidget {
                         color: Colors.black,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                      child: const Icon(Icons.close, color: Colors.white),
                     ),
                   ),
                 ],
@@ -101,7 +89,7 @@ class BarcodeNotFoundScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.pop(context, false);
                   },
-                  child: const Text('Cancel'),
+                  child: const Text('Scan Again'),
                 ),
               ),
             ],

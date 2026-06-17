@@ -46,9 +46,7 @@ class _QrLoginScannerScreenState extends State<QrLoginScannerScreen> {
       ),
       body: Stack(
         children: [
-          MobileScanner(
-            onDetect: handleBarcode,
-          ),
+          MobileScanner(onDetect: handleBarcode),
           Center(
             child: Container(
               width: 240,
@@ -65,10 +63,7 @@ class _QrLoginScannerScreenState extends State<QrLoginScannerScreen> {
             child: Text(
               'Point your camera at the QR code shown in Odoo POS',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ),
         ],

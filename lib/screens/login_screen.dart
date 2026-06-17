@@ -6,6 +6,8 @@ import 'scanner_screen.dart';
 import '../models/qr_login_data.dart';
 import '../services/auth_service.dart';
 import '../services/token_storage.dart';
+import 'dart:async';
+import '../services/analytics_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,87 +20,109 @@ class _LoginScreenState extends State<LoginScreen> {
   QrLoginData? lastQrData;
   final AuthService authService = AuthService();
   final TokenStorage tokenStorage = TokenStorage.instance;
+  final AnalyticsService analyticsService = AnalyticsService();
   bool isLoggingIn = false;
   String? authToken;
   String? errorMessage;
 
   Future<void> openScanner() async {
-  final qrData = await Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const QrLoginScannerScreen(),
-    ),
-  );
+    final qrData = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const QrLoginScannerScreen()),
+    );
 
-  if (!mounted || qrData == null) {
-    return;
-  }
+    if (!mounted || qrData == null) {
+      return;
+    }
 
-  late QrLoginData loginData;
+    late QrLoginData loginData;
 
-  try {
-  loginData = QrLoginData.fromRaw(qrData.toString());
-} catch (error) {
-  debugPrint('QR parse error: $error');
+    try {
+      loginData = QrLoginData.fromRaw(qrData.toString());
+    } catch (error) {
+      debugPrint('QR parse error: $error');
 
-  setState(() {
-    errorMessage = 'Invalid QR code. Please scan the QR code from Odoo POS.';
-  });
-  return;
-}
+      setState(() {
+        errorMessage =
+            'Invalid QR code. Please scan the QR code from Odoo POS.';
+      });
+      return;
+    }
 
-  if (loginData.isExpired) {
-    setState(() {
-      errorMessage =
-          'This QR code has expired. Please generate a new one from POS.';
-    });
-    return;
-  }
-
-  setState(() {
-    lastQrData = loginData;
-    isLoggingIn = true;
-    errorMessage = null;
-  });
-
-  
-
-  try {
-    final token = await authService.loginWithQr(loginData);
-    await tokenStorage.saveToken(token);
-    await tokenStorage.saveBackendUrl(loginData.backendUrl);
-
-    if (!mounted) {
+    if (loginData.isExpired) {
+      setState(() {
+        errorMessage =
+            'This QR code has expired. Please generate a new one from POS.';
+      });
       return;
     }
 
     setState(() {
-      authToken = token;
-      isLoggingIn = false;
+      lastQrData = loginData;
+      isLoggingIn = true;
+      errorMessage = null;
     });
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ScannerScreen(
+    try {
+      final token = await authService.loginWithQr(loginData);
+      await tokenStorage.saveToken(token);
+      await tokenStorage.saveBackendUrl(loginData.backendUrl);
+
+      unawaited(
+        analyticsService.trackEvent(
           authToken: token,
           backendUrl: loginData.backendUrl,
+          eventName: 'login_success',
+          screen: 'login',
+          metadata: {
+            'pos_session_id': loginData.posSessionId,
+            'pos_config_id': loginData.posConfigId,
+          },
         ),
-      ),
-    );
-  } catch (error) {
-    if (!mounted) {
-      return;
+      );
+
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        authToken = token;
+        isLoggingIn = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ScannerScreen(authToken: token, backendUrl: loginData.backendUrl),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        isLoggingIn = false;
+        errorMessage = 'Login failed. Please try again.';
+      });
+
+      debugPrint('Login failed: $error');
+
+      if (lastQrData != null) {
+        unawaited(
+          analyticsService.trackError(
+            authToken: '',
+            backendUrl: lastQrData!.backendUrl,
+            errorType: 'login_failed',
+            screen: 'login',
+            message: 'Login failed.',
+            details: error.toString(),
+          ),
+        );
+      }
     }
-
-    setState(() {
-      isLoggingIn = false;
-      errorMessage = 'Login failed. Please try again.';
-    });
-
-    debugPrint('Login failed: $error');
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -123,14 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'Scan for Login',
-            style: TextStyle(fontSize: 16),
-          ),
+          const Text('Scan for Login', style: TextStyle(fontSize: 16)),
           const SizedBox(height: 4),
-         Text(isLoggingIn ? 'Logging in with QR...' : 'Tap scanner box for now',
-        style: const TextStyle(fontSize: 12, color: Colors.black45),
-        ),
+          Text(
+            isLoggingIn ? 'Logging in with QR...' : 'Tap scanner box for now',
+            style: const TextStyle(fontSize: 12, color: Colors.black45),
+          ),
           if (errorMessage != null) ...[
             const SizedBox(height: 20),
             Text(
@@ -140,19 +162,23 @@ class _LoginScreenState extends State<LoginScreen> {
                 color: Colors.red,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                ),
               ),
+            ),
           ],
 
           if (lastQrData != null) ...[
             const SizedBox(height: 24),
-            const Text('Last scanned QR:',
-            style: TextStyle(fontWeight: FontWeight.bold),),
+            const Text(
+              'Last scanned QR:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 8),
-            Text(lastQrData!.rawValue, textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12),),
-            ],
-          
+            Text(
+              lastQrData!.rawValue,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12),
+            ),
+          ],
         ],
       ),
     );
