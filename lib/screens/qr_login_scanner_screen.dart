@@ -49,21 +49,34 @@ class _QrLoginScannerScreenState extends State<QrLoginScannerScreen> {
           MobileScanner(onDetect: handleBarcode),
           Center(
             child: Container(
-              width: 240,
-              height: 240,
+              width: 260,
+              height: 260,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 3),
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             left: 24,
             right: 24,
-            bottom: 40,
-            child: Text(
-              'Point your camera at the QR code shown in Odoo POS',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 16),
+            bottom: 36,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: const Text(
+                'Point your camera at the login QR code shown in Odoo POS.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.3,
+                ),
+              ),
             ),
           ),
         ],

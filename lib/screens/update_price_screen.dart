@@ -126,125 +126,104 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(34, 16, 34, 28),
+              padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 44,
+                  minHeight: constraints.maxHeight - 40,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const _UpdatePriceHeader(),
-                      const SizedBox(height: 30),
+                      const SizedBox(height: 32),
                       Text(
                         widget.product.name,
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 28),
                       const Text(
                         'Current Price',
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 4),
                       Text(
                         widget.product.formattedPrice,
                         style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 22),
+                      const SizedBox(height: 26),
                       const Text(
                         'New Price',
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: priceController,
-                        autofocus: false,
+                        enabled: !isSaving,
+                        autofocus: true,
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'New Price',
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 14,
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(6),
-                            borderSide: const BorderSide(
-                              color: Colors.black54,
-                            ),
-                          ),
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w700,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Enter new price',
+                          prefixText: 'CHF ',
                         ),
                       ),
                       if (errorMessage != null) ...[
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         Text(
                           errorMessage!,
-                          style: const TextStyle(color: Colors.red),
+                          style: const TextStyle(
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ],
                       const Spacer(),
-                      Center(
-                        child: SizedBox(
-                          width: 245,
-                          height: 44,
-                          child: FilledButton.icon(
-                            onPressed: isSaving ? null : savePrice,
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.black,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            icon: isSaving
-                                ? const SizedBox.square(
-                                    dimension: 17,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Icon(
-                                    Icons.save_outlined,
-                                    size: 18,
+                      SizedBox(
+                        width: double.infinity,
+                        height: 58,
+                        child: FilledButton.icon(
+                          onPressed: isSaving ? null : savePrice,
+                          icon: isSaving
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
                                   ),
-                            label: Text(
-                              isSaving ? 'Saving...' : 'Save Price',
-                            ),
-                          ),
+                                )
+                              : const Icon(Icons.save_outlined, size: 20),
+                          label: Text(isSaving ? 'Saving...' : 'Save Price'),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Center(
-                        child: SizedBox(
-                          width: 245,
-                          height: 44,
-                          child: OutlinedButton(
-                            onPressed: isSaving
-                                ? null
-                                : () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.black,
-                              side: const BorderSide(
-                                color: Colors.black54,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5),
-                              ),
-                            ),
-                            child: const Text('Cancel'),
-                          ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: OutlinedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () => Navigator.pop(context),
+                          child: const Text('Cancel'),
                         ),
                       ),
                     ],
@@ -264,26 +243,20 @@ class _UpdatePriceHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
-        const SizedBox(width: 42),
-        const Expanded(
+        SizedBox(width: 48),
+        Expanded(
           child: Text(
             'Update Price',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
         ),
         CircleAvatar(
-          radius: 21,
+          radius: 24,
           backgroundColor: Colors.black12,
-          child: IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.person_outline,
-              color: Colors.black,
-            ),
-          ),
+          child: Icon(Icons.person_outline, color: Colors.black),
         ),
       ],
     );

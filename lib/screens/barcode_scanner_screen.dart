@@ -49,21 +49,34 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
           MobileScanner(onDetect: handleBarcode),
           Center(
             child: Container(
-              width: 280,
-              height: 120,
+              width: 320,
+              height: 150,
               decoration: BoxDecoration(
                 border: Border.all(color: Colors.white, width: 3),
+                borderRadius: BorderRadius.circular(16),
               ),
             ),
           ),
-          const Positioned(
+          Positioned(
             left: 24,
             right: 24,
-            bottom: 40,
-            child: Text(
-              'Point your camera at the product barcode',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white, fontSize: 16),
+            bottom: 36,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: const Text(
+                'Point your camera at the product barcode.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.3,
+                ),
+              ),
             ),
           ),
         ],

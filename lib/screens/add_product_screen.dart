@@ -208,29 +208,48 @@ class _AddProductScreenState extends State<AddProductScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(34, 16, 34, 28),
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  const SizedBox(width: 42),
+                  const SizedBox(width: 48),
                   Expanded(
-                    child: Text(
-                      widget.barcode,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 18),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Add Product',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.barcode,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const CircleAvatar(
-                    radius: 21,
+                    radius: 24,
                     backgroundColor: Colors.black12,
                     child: Icon(Icons.person_outline, color: Colors.black),
                   ),
                 ],
               ),
-              const SizedBox(height: 36),
-              const _FieldLabel(label: 'Product Name', secondary: 'Required'),
+              const SizedBox(height: 32),
+              _FieldLabel(
+                label: 'Sales Tax',
+                secondary: isLoadingReferences ? 'Loading...' : 'Optional',
+              ),
               TextField(
                 controller: nameController,
                 enabled: !isSaving,
@@ -256,7 +275,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
               const SizedBox(height: 20),
               _FieldLabel(
                 label: 'Sales Tax',
-                secondary: isLoadingReferences ? 'Loading...' : 'Default',
+                secondary: isLoadingReferences ? 'Loading...' : 'Optional',
               ),
               DropdownButtonFormField<int?>(
                 initialValue: _safeSelectedTaxId(),
@@ -264,7 +283,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 items: [
                   const DropdownMenuItem<int?>(
                     value: null,
-                    child: Text('Default'),
+                    child: Text('No tax selected'),
                   ),
                   ..._uniqueTaxes().map(
                     (tax) => DropdownMenuItem<int?>(
@@ -285,9 +304,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 const SizedBox(height: 16),
                 Text(errorMessage!, style: const TextStyle(color: Colors.red)),
               ],
-              const SizedBox(height: 50),
+              const SizedBox(height: 42),
               _ActionButton(
-                label: isSaving ? 'Saving...' : 'Add New Product',
+                label: isSaving ? 'Saving...' : 'Add Product',
                 icon: isSaving ? null : Icons.add_circle_outline,
                 filled: true,
                 onPressed: isSaving ? null : saveProduct,
@@ -351,30 +370,10 @@ class _ActionButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 58,
       child: filled
-          ? FilledButton(
-              onPressed: onPressed,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.black38,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: child,
-            )
-          : OutlinedButton(
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: child,
-            ),
+          ? FilledButton(onPressed: onPressed, child: child)
+          : OutlinedButton(onPressed: onPressed, child: child),
     );
   }
 }

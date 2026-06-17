@@ -11,91 +11,98 @@ class BarcodeNotFoundScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(32, 24, 32, 28),
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
           child: Column(
             children: [
-              const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Barcode Not Found', style: TextStyle(fontSize: 20)),
-                  CircleAvatar(
-                    backgroundColor: Colors.black12,
-                    child: Icon(Icons.person_outline, color: Colors.black),
-                  ),
-                ],
-              ),
+              const _BarcodeNotFoundHeader(),
               const Spacer(),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const CircleAvatar(
-                    radius: 110,
-                    backgroundColor: Color(0xFFE8E8E8),
-                    child: Icon(
-                      Icons.barcode_reader,
-                      size: 130,
-                      color: Colors.black,
-                    ),
-                  ),
-                  Positioned(
-                    right: 2,
-                    top: 2,
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: const BoxDecoration(
-                        color: Colors.black,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(Icons.close, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Text(
-                barcode,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+              Container(
+                width: 190,
+                height: 190,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFEFEFEF),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.barcode_reader,
+                  size: 110,
+                  color: Colors.black,
                 ),
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 28),
               const Text(
-                'This barcode is not in the POS',
-                style: TextStyle(color: Colors.black54),
+                'Product Not Found',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                barcode,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'This barcode is not available in POS.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.black54, fontSize: 15),
               ),
               const Spacer(),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: 58,
                 child: FilledButton.icon(
                   onPressed: () {
                     Navigator.pop(context, true);
                   },
-                  style: FilledButton.styleFrom(
-                    backgroundColor: Colors.black,
-                    foregroundColor: Colors.white,
-                  ),
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add New Product'),
+                  icon: const Icon(Icons.add, size: 21),
+                  label: const Text('Add Product'),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                height: 50,
-                child: OutlinedButton(
+                height: 54,
+                child: OutlinedButton.icon(
                   onPressed: () {
                     Navigator.pop(context, false);
                   },
-                  child: const Text('Scan Again'),
+                  icon: const Icon(Icons.qr_code_scanner, size: 20),
+                  label: const Text('Scan Again'),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _BarcodeNotFoundHeader extends StatelessWidget {
+  const _BarcodeNotFoundHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        SizedBox(width: 48),
+        Expanded(
+          child: Text(
+            'Barcode',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+          ),
+        ),
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: Colors.black12,
+          child: Icon(Icons.person_outline, color: Colors.black),
+        ),
+      ],
     );
   }
 }

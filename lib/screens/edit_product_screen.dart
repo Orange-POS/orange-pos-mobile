@@ -202,12 +202,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(34, 16, 34, 28),
+          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const _EditProductHeader(),
-              const SizedBox(height: 36),
+              const SizedBox(height: 32),
               const _FieldLabel(label: 'Product Name', secondary: 'Required'),
               TextField(
                 controller: nameController,
@@ -234,7 +234,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 items: [
                   const DropdownMenuItem<int?>(
                     value: null,
-                    child: Text('Default'),
+                    child: Text('No tax selected'),
                   ),
                   ..._uniqueTaxes().map(
                     (tax) => DropdownMenuItem<int?>(
@@ -257,7 +257,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               ],
               const SizedBox(height: 42),
               _ActionButton(
-                label: isSaving ? 'Saving...' : 'Save Product',
+                label: isSaving ? 'Saving...' : 'Save Changes',
                 icon: isSaving ? null : Icons.save_outlined,
                 filled: true,
                 onPressed: isSaving ? null : saveProduct,
@@ -276,18 +276,18 @@ class _EditProductHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       children: [
-        const SizedBox(width: 42),
-        const Expanded(
+        SizedBox(width: 48),
+        Expanded(
           child: Text(
-            'Edit Product',
+            'Edit Name & Tax',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
         ),
-        const CircleAvatar(
-          radius: 21,
+        CircleAvatar(
+          radius: 24,
           backgroundColor: Colors.black12,
           child: Icon(Icons.person_outline, color: Colors.black),
         ),
@@ -346,30 +346,10 @@ class _ActionButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 58,
       child: filled
-          ? FilledButton(
-              onPressed: onPressed,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                disabledBackgroundColor: Colors.black38,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: child,
-            )
-          : OutlinedButton(
-              onPressed: onPressed,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: child,
-            ),
+          ? FilledButton(onPressed: onPressed, child: child)
+          : OutlinedButton(onPressed: onPressed, child: child),
     );
   }
 }

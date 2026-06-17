@@ -54,7 +54,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     final isSameBarcode = previousBarcode == barcode;
     final isTooSoon =
-        DateTime.now().difference(previousScanTime) < const Duration(seconds: 2);
+        DateTime.now().difference(previousScanTime) <
+        const Duration(seconds: 2);
 
     return isSameBarcode && isTooSoon;
   }
@@ -297,51 +298,80 @@ class _ScannerScreenState extends State<ScannerScreen> {
           GestureDetector(
             onTap: isLoading ? null : scanBarcode,
             child: Container(
-              width: 190,
-              height: 150,
+              width: double.infinity,
+              height: 210,
               decoration: BoxDecoration(
+                color: Colors.white,
                 border: Border.all(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : const Icon(
-                      Icons.barcode_reader,
-                      size: 110,
-                      color: Colors.black,
+                  : const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.barcode_reader,
+                          size: 120,
+                          color: Colors.black,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'Tap to Scan Product',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
                     ),
             ),
           ),
-          const SizedBox(height: 20),
-          const Text('Scan Products', style: TextStyle(fontSize: 17)),
           if (errorMessage != null) ...[
-            const SizedBox(height: 20),
-            Text(
-              errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.red, fontSize: 13),
+            const SizedBox(height: 22),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3F3),
+                border: Border.all(color: const Color(0xFFFFB4B4)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Product Lookup Failed',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.red,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    errorMessage!,
+                    style: const TextStyle(color: Colors.black87, fontSize: 14),
+                  ),
+                  if (errorDetails != null) ...[
+                    const SizedBox(height: 12),
+                    SelectableText(
+                      errorDetails!,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.black54,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: copyErrorDetails,
+                      icon: const Icon(Icons.copy, size: 18),
+                      label: const Text('Copy Error Details'),
+                    ),
+                  ],
+                ],
+              ),
             ),
-            if (errorDetails != null) ...[
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5F5),
-                  border: Border.all(color: Colors.black12),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: SelectableText(
-                  errorDetails!,
-                  style: const TextStyle(fontSize: 11, color: Colors.black87),
-                ),
-              ),
-              const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: copyErrorDetails,
-                icon: const Icon(Icons.copy, size: 16),
-                label: const Text('Copy Error Details'),
-              ),
-            ],
           ],
           const Spacer(),
         ],

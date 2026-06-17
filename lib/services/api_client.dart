@@ -51,7 +51,7 @@ class ApiClientException implements Exception {
 }
 
 class ApiClient {
-  static const Duration requestTimeout = Duration(seconds: 15);
+  static const Duration requestTimeout = Duration(seconds: 60);
 
   Future<Map<String, dynamic>> postJsonToUrl({
     required String url,

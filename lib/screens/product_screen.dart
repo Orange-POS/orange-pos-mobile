@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
@@ -62,8 +60,6 @@ class _ProductScreenState extends State<ProductScreen> {
     });
   }
 
-
-
   Future<void> openEditProduct() async {
     final result = await Navigator.push<Object?>(
       context,
@@ -89,8 +85,6 @@ class _ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-   
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -106,56 +100,43 @@ class _ProductScreenState extends State<ProductScreen> {
               const _ProductHeader(),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(34, 28, 34, 24),
+                  padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  product.name,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                                _ProductValue(
-                                  label: 'Barcode',
-                                  value: product.barcode.isEmpty
-                                      ? 'Not available'
-                                      : product.barcode,
-                                ),
-                                _ProductValue(
-                                  label: 'Current Price',
-                                  value: product.formattedPrice,
-                                ),
-                                _ProductValue(
-                                  label: 'Sales Tax',
-                                  value: product.taxLabel,
-                                ),
-                              ],
-                            ),
-                          ),
-                        
-                        ],
+                      Text(
+                        product.name,
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      _ProductValue(
+                        label: 'Barcode',
+                        value: product.barcode.isEmpty
+                            ? 'Not available'
+                            : product.barcode,
+                      ),
+                      _ProductValue(
+                        label: 'Current Price',
+                        value: product.formattedPrice,
+                        isPrimary: true,
+                      ),
+                      _ProductValue(
+                        label: 'Sales Tax',
+                        value: product.taxLabel,
                       ),
                       const SizedBox(height: 36),
-
-                      const SizedBox(height: 28),
                       _ProductButton(
-                        icon: Icons.edit_outlined,
+                        icon: Icons.sell_outlined,
                         label: 'Update Price',
                         onPressed: isSaving ? null : openUpdatePrice,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       _ProductButton(
-                        icon: Icons.edit,
+                        icon: Icons.edit_outlined,
                         label: 'Edit Name & Tax',
                         onPressed: isSaving ? null : openEditProduct,
                       ),
@@ -176,25 +157,22 @@ class _ProductHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+    return const Padding(
+      padding: EdgeInsets.fromLTRB(28, 16, 28, 0),
       child: Row(
         children: [
-          const SizedBox(width: 42),
-          const Expanded(
+          SizedBox(width: 48),
+          Expanded(
             child: Text(
               'Product Details',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
             ),
           ),
           CircleAvatar(
-            radius: 21,
+            radius: 24,
             backgroundColor: Colors.black12,
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.person_outline, color: Colors.black),
-            ),
+            child: Icon(Icons.person_outline, color: Colors.black),
           ),
         ],
       ),
@@ -205,19 +183,38 @@ class _ProductHeader extends StatelessWidget {
 class _ProductValue extends StatelessWidget {
   final String label;
   final String value;
+  final bool isPrimary;
 
-  const _ProductValue({required this.label, required this.value});
+  const _ProductValue({
+    required this.label,
+    required this.value,
+    this.isPrimary = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 14)),
-          const SizedBox(height: 3),
-          Text(value, style: const TextStyle(fontSize: 17)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isPrimary ? 28 : 18,
+              fontWeight: isPrimary ? FontWeight.w800 : FontWeight.w500,
+              color: Colors.black,
+            ),
+          ),
         ],
       ),
     );
@@ -237,23 +234,13 @@ class _ProductButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SizedBox(
-        width: 245,
-        height: 44,
-        child: FilledButton.icon(
-          onPressed: onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: Colors.black38,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(5),
-            ),
-          ),
-          icon: Icon(icon, size: 19),
-          label: Text(label),
-        ),
+    return SizedBox(
+      width: double.infinity,
+      height: 58,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 21),
+        label: Text(label),
       ),
     );
   }

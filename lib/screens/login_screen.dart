@@ -129,56 +129,70 @@ class _LoginScreenState extends State<LoginScreen> {
     return AppPage(
       title: 'Inventory Tracker',
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const Spacer(),
           GestureDetector(
-            onTap: openScanner,
+            onTap: isLoggingIn ? null : openScanner,
             child: Container(
-              width: 220,
-              height: 220,
+              width: double.infinity,
+              height: 230,
               decoration: BoxDecoration(
+                color: Colors.white,
                 border: Border.all(color: Colors.black, width: 2),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.qr_code_scanner,
-                size: 80,
-                color: Colors.black,
-              ),
+              child: isLoggingIn
+                  ? const Center(child: CircularProgressIndicator())
+                  : const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.qr_code_scanner,
+                          size: 110,
+                          color: Colors.black,
+                        ),
+                        SizedBox(height: 14),
+                        Text(
+                          'Tap to Scan Login QR',
+                          style: TextStyle(
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
           const SizedBox(height: 16),
-          const Text('Scan for Login', style: TextStyle(fontSize: 16)),
-          const SizedBox(height: 4),
           Text(
-            isLoggingIn ? 'Logging in with QR...' : 'Tap scanner box for now',
-            style: const TextStyle(fontSize: 12, color: Colors.black45),
+            isLoggingIn
+                ? 'Logging in...'
+                : 'Scan the QR code shown in Odoo POS.',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 14, color: Colors.black54),
           ),
           if (errorMessage != null) ...[
-            const SizedBox(height: 20),
-            Text(
-              errorMessage!,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.red,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 22),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3F3),
+                border: Border.all(color: const Color(0xFFFFB4B4)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                errorMessage!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
-
-          if (lastQrData != null) ...[
-            const SizedBox(height: 24),
-            const Text(
-              'Last scanned QR:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              lastQrData!.rawValue,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ],
+          const Spacer(),
         ],
       ),
     );
