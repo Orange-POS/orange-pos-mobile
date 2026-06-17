@@ -9,10 +9,10 @@ void main() {
 
     await tester.pumpWidget(const InventoryTrackerApp());
 
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
 
     expect(find.text('Inventory Tracker'), findsOneWidget);
-    expect(find.text('Scan for Login'), findsOneWidget);
+    expect(find.text('Tap to Scan Login QR'), findsOneWidget);
+    expect(find.text('Scan the QR code shown in Odoo POS.'), findsOneWidget);
   });
 }
