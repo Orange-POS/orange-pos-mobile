@@ -6,6 +6,7 @@ import '../models/product.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
+import '../theme/app_brand.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -36,15 +37,17 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   void initState() {
     super.initState();
 
-    priceController = TextEditingController(
-      text: widget.product.formattedPrice,
-    );
+    priceController = TextEditingController();
   }
 
   @override
   void dispose() {
     priceController.dispose();
     super.dispose();
+  }
+
+  String get priceWithoutCurrency {
+    return widget.product.formattedPrice.replaceFirst('CHF', '').trim();
   }
 
   Future<void> savePrice() async {
@@ -121,56 +124,44 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppBrand.loginBackground,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                22,
+                24,
+                22,
+                MediaQuery.viewInsetsOf(context).bottom + 24,
+              ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 40,
+                  minHeight: constraints.maxHeight - 48,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const _UpdatePriceHeader(),
                       const SizedBox(height: 32),
-                      Text(
-                        widget.product.name,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
+                      _CurrentPriceCard(
+                        productName: widget.product.name,
+                        currentPrice: priceWithoutCurrency,
+                      ),
+                      const SizedBox(height: 34),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'New Price',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: AppBrand.textDarkGrey,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 28),
-                      const Text(
-                        'Current Price',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        widget.product.formattedPrice,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 26),
-                      const Text(
-                        'New Price',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 16),
                       TextField(
                         controller: priceController,
                         enabled: !isSaving,
@@ -179,28 +170,60 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                           decimal: true,
                         ),
                         style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w700,
+                          fontSize: 24,
+                          fontWeight: FontWeight.w600,
+                          color: AppBrand.textDarkGrey,
                         ),
-                        decoration: const InputDecoration(
-                          hintText: 'Enter new price',
-                          prefixText: 'CHF ',
+                        decoration: InputDecoration(
+                          hintText: 'CHF',
+                          hintStyle: const TextStyle(
+                            fontSize: 24,
+                            color: AppBrand.textSecondary,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 22,
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: AppBrand.primary,
+                              width: 3,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: AppBrand.primary,
+                              width: 3,
+                            ),
+                          ),
+                          disabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: AppBrand.primary,
+                              width: 3,
+                            ),
+                          ),
                         ),
                       ),
                       if (errorMessage != null) ...[
                         const SizedBox(height: 14),
-                        Text(
-                          errorMessage!,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.w600,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
-                      const Spacer(),
+                      const SizedBox(height: 80),
                       SizedBox(
                         width: double.infinity,
-                        height: 58,
+                        height: 74,
                         child: FilledButton.icon(
                           onPressed: isSaving ? null : savePrice,
                           icon: isSaving
@@ -211,21 +234,12 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(Icons.save_outlined, size: 20),
+                              : const Icon(Icons.save, size: 24),
                           label: Text(isSaving ? 'Saving...' : 'Save Price'),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 54,
-                        child: OutlinedButton(
-                          onPressed: isSaving
-                              ? null
-                              : () => Navigator.pop(context),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
+                      const Spacer(),
+                      const _UpdatePriceFooter(),
                     ],
                   ),
                 ),
@@ -250,15 +264,120 @@ class _UpdatePriceHeader extends StatelessWidget {
           child: Text(
             'Update Price',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
+            ),
           ),
         ),
         CircleAvatar(
           radius: 24,
-          backgroundColor: Colors.black12,
-          child: Icon(Icons.person_outline, color: Colors.black),
+          backgroundColor: AppBrand.primaryLight,
+          child: Icon(Icons.person_outline, color: AppBrand.primary),
         ),
       ],
+    );
+  }
+}
+
+class _CurrentPriceCard extends StatelessWidget {
+  final String productName;
+  final String currentPrice;
+
+  const _CurrentPriceCard({
+    required this.productName,
+    required this.currentPrice,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 26, 16, 24),
+      decoration: BoxDecoration(
+        color: AppBrand.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppBrand.loginBackground, width: 4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            productName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 48,
+              fontWeight: FontWeight.w800,
+              height: 1,
+              color: AppBrand.primary,
+            ),
+          ),
+          const SizedBox(height: 28),
+          const Text(
+            'Current Price',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w400,
+              color: AppBrand.textDarkGrey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text.rich(
+            TextSpan(
+              children: [
+                const TextSpan(
+                  text: 'CHF ',
+                  style: TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w800,
+                    color: AppBrand.textDarkGrey,
+                  ),
+                ),
+                TextSpan(
+                  text: currentPrice,
+                  style: const TextStyle(
+                    fontSize: 34,
+                    fontWeight: FontWeight.w400,
+                    color: AppBrand.textDarkGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _UpdatePriceFooter extends StatelessWidget {
+  const _UpdatePriceFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: 'Powered By ',
+            style: TextStyle(
+              color: AppBrand.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          TextSpan(
+            text: 'OrangePos',
+            style: TextStyle(
+              color: AppBrand.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

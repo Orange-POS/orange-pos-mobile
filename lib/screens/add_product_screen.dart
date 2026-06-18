@@ -7,6 +7,7 @@ import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
+import '../theme/app_brand.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -205,117 +206,210 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final referenceFieldsDisabled = isSaving || isLoadingReferences;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppBrand.loginBackground,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const SizedBox(width: 48),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Add Product',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                26,
+                24,
+                26,
+                MediaQuery.viewInsetsOf(context).bottom + 24,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 48,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      _AddProductHeader(barcode: widget.barcode),
+                      const SizedBox(height: 52),
+                      const _FieldLabel(
+                        label: 'Product Name',
+                        secondary: 'Required',
+                      ),
+                      _OrangeTextField(
+                        controller: nameController,
+                        enabled: !isSaving,
+                        hintText: 'Name',
+                        textInputAction: TextInputAction.next,
+                      ),
+                      const SizedBox(height: 20),
+                      const _FieldLabel(
+                        label: 'Product Price',
+                        secondary: 'Required',
+                      ),
+                      _OrangeTextField(
+                        controller: priceController,
+                        enabled: !isSaving,
+                        hintText: 'CHF',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.barcode,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.black54,
+                      ),
+                      const SizedBox(height: 20),
+                      _FieldLabel(
+                        label: 'Tax',
+                        secondary: isLoadingReferences ? 'Loading...' : 'Default',
+                      ),
+                      DropdownButtonFormField<int?>(
+                        initialValue: _safeSelectedTaxId(),
+                        decoration: _orangeInputDecoration(),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('No tax selected'),
+                          ),
+                          ..._uniqueTaxes().map(
+                            (tax) => DropdownMenuItem<int?>(
+                              value: tax.id,
+                              child: Text(tax.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: referenceFieldsDisabled
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  selectedTaxId = value;
+                                });
+                              },
+                      ),
+                      if (errorMessage != null) ...[
+                        const SizedBox(height: 14),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
-                    ),
+                      const SizedBox(height: 58),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 74,
+                        child: FilledButton.icon(
+                          onPressed: isSaving ? null : saveProduct,
+                          icon: isSaving
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.add_circle, size: 24),
+                          label: Text(
+                            isSaving ? 'Saving...' : 'Add New Product',
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      const _AddProductFooter(),
+                    ],
                   ),
-                  const CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.black12,
-                    child: Icon(Icons.person_outline, color: Colors.black),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              _FieldLabel(
-                label: 'Sales Tax',
-                secondary: isLoadingReferences ? 'Loading...' : 'Optional',
-              ),
-              TextField(
-                controller: nameController,
-                enabled: !isSaving,
-                textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(
-                  hintText: 'Name',
-                  border: OutlineInputBorder(),
                 ),
               ),
-              const SizedBox(height: 20),
-              const _FieldLabel(label: 'Product Price', secondary: 'Required'),
-              TextField(
-                controller: priceController,
-                enabled: !isSaving,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: const InputDecoration(
-                  hintText: 'Price',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              _FieldLabel(
-                label: 'Sales Tax',
-                secondary: isLoadingReferences ? 'Loading...' : 'Optional',
-              ),
-              DropdownButtonFormField<int?>(
-                initialValue: _safeSelectedTaxId(),
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('No tax selected'),
-                  ),
-                  ..._uniqueTaxes().map(
-                    (tax) => DropdownMenuItem<int?>(
-                      value: tax.id,
-                      child: Text(tax.name),
-                    ),
-                  ),
-                ],
-                onChanged: referenceFieldsDisabled
-                    ? null
-                    : (value) {
-                        setState(() {
-                          selectedTaxId = value;
-                        });
-                      },
-              ),
-              if (errorMessage != null) ...[
-                const SizedBox(height: 16),
-                Text(errorMessage!, style: const TextStyle(color: Colors.red)),
-              ],
-              const SizedBox(height: 42),
-              _ActionButton(
-                label: isSaving ? 'Saving...' : 'Add Product',
-                icon: isSaving ? null : Icons.add_circle_outline,
-                filled: true,
-                onPressed: isSaving ? null : saveProduct,
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            );
+          },
         ),
       ),
+    );
+  }
+}
+
+InputDecoration _orangeInputDecoration({String? hintText}) {
+  return InputDecoration(
+    hintText: hintText,
+    hintStyle: const TextStyle(
+      fontSize: 20,
+      color: AppBrand.textSecondary,
+    ),
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 18,
+      vertical: 18,
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
+    ),
+    disabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
+    ),
+  );
+}
+
+class _AddProductHeader extends StatelessWidget {
+  final String barcode;
+
+  const _AddProductHeader({required this.barcode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 48),
+        Expanded(
+          child: Text(
+            barcode,
+            textAlign: TextAlign.center,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
+            ),
+          ),
+        ),
+        const CircleAvatar(
+          radius: 24,
+          backgroundColor: AppBrand.primaryLight,
+          child: Icon(Icons.person_outline, color: AppBrand.primary),
+        ),
+      ],
+    );
+  }
+}
+
+class _OrangeTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool enabled;
+  final String hintText;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+
+  const _OrangeTextField({
+    required this.controller,
+    required this.enabled,
+    required this.hintText,
+    this.keyboardType,
+    this.textInputAction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      style: const TextStyle(
+        fontSize: 20,
+        color: AppBrand.textDarkGrey,
+      ),
+      decoration: _orangeInputDecoration(hintText: hintText),
     );
   }
 }
@@ -329,15 +423,25 @@ class _FieldLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         children: [
-          Text(label),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
+            ),
+          ),
           const Spacer(),
           if (secondary != null)
             Text(
               secondary!,
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
+              style: const TextStyle(
+                fontSize: 18,
+                color: AppBrand.textDarkGrey,
+              ),
             ),
         ],
       ),
@@ -345,35 +449,32 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final IconData? icon;
-  final bool filled;
-  final VoidCallback? onPressed;
-
-  const _ActionButton({
-    required this.label,
-    required this.filled,
-    required this.onPressed,
-    this.icon,
-  });
+class _AddProductFooter extends StatelessWidget {
+  const _AddProductFooter();
 
   @override
   Widget build(BuildContext context) {
-    final child = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
-        Text(label),
-      ],
-    );
-
-    return SizedBox(
-      width: double.infinity,
-      height: 58,
-      child: filled
-          ? FilledButton(onPressed: onPressed, child: child)
-          : OutlinedButton(onPressed: onPressed, child: child),
+    return const Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: 'Powered By ',
+            style: TextStyle(
+              color: AppBrand.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          TextSpan(
+            text: 'OrangePos',
+            style: TextStyle(
+              color: AppBrand.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

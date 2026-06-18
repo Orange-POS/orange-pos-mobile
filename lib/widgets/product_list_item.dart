@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 
 class ProductListItem extends StatelessWidget {
-final Product product;
-final VoidCallback onOpen;
+  final Product product;
+  final VoidCallback onOpen;
 
-const ProductListItem({
-  super.key,
-  required this.product,
-  required this.onOpen,
-});
+  const ProductListItem({
+    super.key,
+    required this.product,
+    required this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,10 +22,10 @@ const ProductListItem({
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(product.name),
-    Text(
-  product.formattedPrice,
-  style: const TextStyle(fontSize: 12),
-)
+              Text(
+                product.formattedPrice,
+                style: const TextStyle(fontSize: 12),
+              ),
             ],
           ),
         ),

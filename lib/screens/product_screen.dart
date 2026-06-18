@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../models/product.dart';
-import 'update_price_screen.dart';
+import '../theme/app_brand.dart';
 import 'edit_product_screen.dart';
+import 'update_price_screen.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
@@ -21,22 +22,13 @@ class ProductScreen extends StatefulWidget {
 }
 
 class _ProductScreenState extends State<ProductScreen> {
-  final TextEditingController nameController = TextEditingController();
-
   late Product product;
   bool isSaving = false;
-  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
     product = widget.product;
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    super.dispose();
   }
 
   Future<void> openUpdatePrice() async {
@@ -61,7 +53,7 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 
   Future<void> openEditProduct() async {
-    final result = await Navigator.push<Object?>(
+    final updatedProduct = await Navigator.push<Product>(
       context,
       MaterialPageRoute(
         builder: (context) => EditProductScreen(
@@ -72,15 +64,13 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || result == null) {
+    if (!mounted || updatedProduct == null) {
       return;
     }
 
-    if (result is Product) {
-      setState(() {
-        product = result;
-      });
-    }
+    setState(() {
+      product = updatedProduct;
+    });
   }
 
   @override
@@ -93,58 +83,41 @@ class _ProductScreenState extends State<ProductScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: AppBrand.loginBackground,
         body: SafeArea(
-          child: Column(
-            children: [
-              const _ProductHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                          height: 1.1,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 18),
+            child: Column(
+              children: [
+                const _ProductHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.only(top: 34),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _ProductTopSection(product: product),
+                        const SizedBox(height: 42),
+                        _PriceTaxSection(product: product),
+                        const SizedBox(height: 54),
+                        _ProductButton(
+                          icon: Icons.sell_outlined,
+                          label: 'Update Price',
+                          onPressed: isSaving ? null : openUpdatePrice,
                         ),
-                      ),
-                      const SizedBox(height: 28),
-                      _ProductValue(
-                        label: 'Barcode',
-                        value: product.barcode.isEmpty
-                            ? 'Not available'
-                            : product.barcode,
-                      ),
-                      _ProductValue(
-                        label: 'Current Price',
-                        value: product.formattedPrice,
-                        isPrimary: true,
-                      ),
-                      _ProductValue(
-                        label: 'Sales Tax',
-                        value: product.taxLabel,
-                      ),
-                      const SizedBox(height: 36),
-                      _ProductButton(
-                        icon: Icons.sell_outlined,
-                        label: 'Update Price',
-                        onPressed: isSaving ? null : openUpdatePrice,
-                      ),
-                      const SizedBox(height: 14),
-                      _ProductButton(
-                        icon: Icons.edit_outlined,
-                        label: 'Edit Name & Tax',
-                        onPressed: isSaving ? null : openEditProduct,
-                      ),
-                    ],
+                        const SizedBox(height: 14),
+                        _ProductButton(
+                          icon: Icons.edit_outlined,
+                          label: 'Edit Name & Tax',
+                          onPressed: isSaving ? null : openEditProduct,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                const _ProductFooter(),
+              ],
+            ),
           ),
         ),
       ),
@@ -157,62 +130,77 @@ class _ProductHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(28, 16, 28, 0),
-      child: Row(
-        children: [
-          SizedBox(width: 48),
-          Expanded(
-            child: Text(
-              'Product Details',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+    return const Row(
+      children: [
+        SizedBox(width: 48),
+        Expanded(
+          child: Text(
+            'Product Detail',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
             ),
           ),
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.black12,
-            child: Icon(Icons.person_outline, color: Colors.black),
-          ),
-        ],
-      ),
+        ),
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: AppBrand.white,
+          child: Icon(Icons.person_outline, color: AppBrand.textPrimary),
+        ),
+      ],
     );
   }
 }
 
-class _ProductValue extends StatelessWidget {
-  final String label;
-  final String value;
-  final bool isPrimary;
+class _ProductTopSection extends StatelessWidget {
+  final Product product;
 
-  const _ProductValue({
-    required this.label,
-    required this.value,
-    this.isPrimary = false,
-  });
+  const _ProductTopSection({required this.product});
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 18),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+      decoration: BoxDecoration(
+        color: AppBrand.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppBrand.loginBackground, width: 4),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            label,
+            product.name,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 14,
-              color: Colors.black54,
-              fontWeight: FontWeight.w600,
+              fontSize: 46,
+              fontWeight: FontWeight.w800,
+              height: 1.05,
+              color: AppBrand.primary,
+            ),
+          ),
+          const SizedBox(height: 14),
+          const Text(
+            'Barcode',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppBrand.textDarkGrey,
+              fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            value,
-            style: TextStyle(
-              fontSize: isPrimary ? 28 : 18,
-              fontWeight: isPrimary ? FontWeight.w800 : FontWeight.w500,
-              color: Colors.black,
+            product.barcode.isEmpty ? 'Not available' : product.barcode,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 24,
+              color: AppBrand.textDarkGrey,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -220,6 +208,119 @@ class _ProductValue extends StatelessWidget {
     );
   }
 }
+
+class _PriceTaxSection extends StatelessWidget {
+  final Product product;
+
+  const _PriceTaxSection({required this.product});
+
+  String get priceWithoutCurrency {
+    return product.formattedPrice.replaceFirst('CHF', '').trim();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _ProductMetricRow(
+          icon: Icons.local_offer,
+          title: 'Current Price',
+          value: 'CHF $priceWithoutCurrency',
+          valueFontSize: 32,
+          valueWeight: FontWeight.w800,
+        ),
+        const SizedBox(height: 10),
+        const _OrangeDivider(),
+        const SizedBox(height: 20),
+        _ProductMetricRow(
+          icon: Icons.percent,
+          title: 'Sales Tax',
+          value: product.taxLabel,
+          valueFontSize: 30,
+          valueWeight: FontWeight.w400,
+        ),
+        const SizedBox(height: 8),
+        const _OrangeDivider(),
+      ],
+    );
+  }
+}
+
+class _ProductMetricRow extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final double valueFontSize;
+  final FontWeight valueWeight;
+
+  const _ProductMetricRow({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.valueFontSize,
+    required this.valueWeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 62,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Icon(
+              icon,
+              size: 34,
+              color: AppBrand.primary,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: valueFontSize,
+                  fontWeight: valueWeight,
+                  color: AppBrand.textDarkGrey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _OrangeDivider extends StatelessWidget {
+  const _OrangeDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 3,
+      width: double.infinity,
+      color: AppBrand.primary,
+    );
+  }
+}
+
 
 class _ProductButton extends StatelessWidget {
   final IconData icon;
@@ -236,11 +337,44 @@ class _ProductButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 58,
+      height: 74,
       child: FilledButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, size: 21),
+        icon: Icon(icon, size: 22),
         label: Text(label),
+      ),
+    );
+  }
+}
+
+class _ProductFooter extends StatelessWidget {
+  const _ProductFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.only(top: 10),
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: 'Powered By ',
+              style: TextStyle(
+                color: AppBrand.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            TextSpan(
+              text: 'OrangePos',
+              style: TextStyle(
+                color: AppBrand.primary,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

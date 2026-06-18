@@ -18,11 +18,7 @@ class ProductTax {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'amount': amount,
-    };
+    return {'id': id, 'name': name, 'amount': amount};
   }
 
   static int _parseInt(dynamic value) {

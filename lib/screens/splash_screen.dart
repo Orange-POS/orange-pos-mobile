@@ -1,11 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
+import '../services/analytics_service.dart';
+import '../services/session_service.dart';
 import '../services/token_storage.dart';
+import '../theme/app_brand.dart';
 import 'login_screen.dart';
 import 'scanner_screen.dart';
-import '../services/session_service.dart';
-import 'dart:async';
-import '../services/analytics_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -85,9 +87,88 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(child: CircularProgressIndicator()),
+    return Scaffold(
+      backgroundColor: AppBrand.loginBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 24, 30, 36),
+          child: Column(
+            children: [
+              const Spacer(flex: 5),
+              const _SplashWordmark(),
+              const SizedBox(height: 92),
+              const SizedBox(
+                width: 42,
+                height: 42,
+                child: CircularProgressIndicator(
+                  strokeWidth: 5,
+                  color: AppBrand.primaryDark,
+                ),
+              ),
+              const Spacer(flex: 4),
+              const Text(
+                'Powered By',
+                style: TextStyle(
+                  fontSize: 18,
+                  color: AppBrand.textPrimary,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Image.asset(
+                AppBrand.orangePosLogo,
+                width: 120,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Text(
+                    'Orange POS',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: AppBrand.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SplashWordmark extends StatelessWidget {
+  const _SplashWordmark();
+
+  @override
+  Widget build(BuildContext context) {
+    return const FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Text.rich(
+        TextSpan(
+          children: [
+            TextSpan(
+              text: 'Orange',
+              style: TextStyle(
+                color: AppBrand.primary,
+                fontSize: 58,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+              ),
+            ),
+            TextSpan(
+              text: 'ONE',
+              style: TextStyle(
+                color: AppBrand.textDarkGrey,
+                fontSize: 58,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

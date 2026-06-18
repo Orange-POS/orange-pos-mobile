@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
-import '../widgets/app_page.dart';
-import 'qr_login_scanner_screen.dart';
-import 'scanner_screen.dart';
 import '../models/qr_login_data.dart';
+import '../services/analytics_service.dart';
 import '../services/auth_service.dart';
 import '../services/token_storage.dart';
-import 'dart:async';
-import '../services/analytics_service.dart';
+import '../theme/app_brand.dart';
+
+import 'qr_login_scanner_screen.dart';
+import 'scanner_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -126,75 +128,156 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppPage(
-      title: 'Inventory Tracker',
-      child: Column(
-        children: [
-          const Spacer(),
-          GestureDetector(
-            onTap: isLoggingIn ? null : openScanner,
-            child: Container(
-              width: double.infinity,
-              height: 230,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black, width: 2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: isLoggingIn
-                  ? const Center(child: CircularProgressIndicator())
-                  : const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.qr_code_scanner,
-                          size: 110,
-                          color: Colors.black,
+    return Scaffold(
+      backgroundColor: AppBrand.loginBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 24, 30, 24),
+          child: Column(
+            children: [
+              const _LoginHeader(),
+              const Spacer(),
+              GestureDetector(
+                onTap: isLoggingIn ? null : openScanner,
+                child: Container(
+                  width: 272,
+                  height: 283,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(color: AppBrand.primary, width: 4),
+                    borderRadius: BorderRadius.circular(45),
+                  ),
+                  child: isLoggingIn
+                      ? const Center(child: CircularProgressIndicator())
+                      : Image.asset(
+                          AppBrand.loginScanIcon,
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.contain,
                         ),
-                        SizedBox(height: 14),
-                        Text(
-                          'Tap to Scan Login QR',
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            isLoggingIn
-                ? 'Logging in...'
-                : 'Scan the QR code shown in Odoo POS.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 14, color: Colors.black54),
-          ),
-          if (errorMessage != null) ...[
-            const SizedBox(height: 22),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3F3),
-                border: Border.all(color: const Color(0xFFFFB4B4)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                errorMessage!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.red,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
+              const SizedBox(height: 14),
+              const Text(
+                'Tap to Scan',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: AppBrand.textPrimary,
+                ),
+              ),
+              if (errorMessage != null) ...[
+                const SizedBox(height: 18),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppBrand.errorBackground,
+                    border: Border.all(color: AppBrand.errorBorder),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+              const Spacer(),
+              const _LoginFooter(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoginHeader extends StatelessWidget {
+  const _LoginHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      children: [
+        _OrangeOneTitle(),
+        Spacer(),
+        CircleAvatar(
+          radius: 24,
+          backgroundColor: AppBrand.white,
+          child: Icon(Icons.person_outline, color: AppBrand.textPrimary),
+        ),
+      ],
+    );
+  }
+}
+
+class _OrangeOneTitle extends StatelessWidget {
+  const _OrangeOneTitle();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: 'Orange',
+            style: TextStyle(
+              color: AppBrand.primary,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
             ),
-          ],
-          const Spacer(),
+          ),
+          TextSpan(
+            text: 'ONE',
+            style: TextStyle(
+              color: AppBrand.textDarkGrey,
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _LoginFooter extends StatelessWidget {
+  const _LoginFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text(
+          'Powered By',
+          style: TextStyle(
+            fontSize: 14,
+            color: AppBrand.textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Image.asset(
+          AppBrand.orangePosLogo,
+          width: 88,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            return const Text(
+              'OrangePOS',
+              style: TextStyle(
+                fontSize: 14,
+                color: AppBrand.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

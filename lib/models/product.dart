@@ -49,20 +49,18 @@ class Product {
       stockUpdatedAt: _parseDateTime(json['stock_updated_at']),
       taxes: _parseTaxes(json['taxes']),
       posCategories: _parsePosCategories(json['pos_categories']),
-      productCategory: _parseProductCategory(
-        json['product_category'],
-      ),
+      productCategory: _parseProductCategory(json['product_category']),
       active: _parseBool(json['active'], fallback: true),
     );
   }
 
   static DateTime? _parseDateTime(dynamic value) {
-  if (value == null || value == false || value.toString().isEmpty) {
-    return null;
-  }
+    if (value == null || value == false || value.toString().isEmpty) {
+      return null;
+    }
 
-  return DateTime.tryParse(value.toString());
-}
+    return DateTime.tryParse(value.toString());
+  }
 
   static List<ProductTax> _parseTaxes(dynamic value) {
     if (value is! List) {
@@ -71,11 +69,7 @@ class Product {
 
     return value
         .whereType<Map>()
-        .map(
-          (item) => ProductTax.fromJson(
-            Map<String, dynamic>.from(item),
-          ),
-        )
+        .map((item) => ProductTax.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -86,11 +80,7 @@ class Product {
 
     return value
         .whereType<Map>()
-        .map(
-          (item) => PosCategory.fromJson(
-            Map<String, dynamic>.from(item),
-          ),
-        )
+        .map((item) => PosCategory.fromJson(Map<String, dynamic>.from(item)))
         .toList();
   }
 
@@ -99,9 +89,7 @@ class Product {
       return null;
     }
 
-    return ProductCategory.fromJson(
-      Map<String, dynamic>.from(value),
-    );
+    return ProductCategory.fromJson(Map<String, dynamic>.from(value));
   }
 
   static int _parseInt(dynamic value) {
@@ -218,8 +206,6 @@ class Product {
       'price_updated_at': priceUpdatedAt?.toIso8601String(),
       'stock_updated_at': stockUpdatedAt?.toIso8601String(),
     };
-
-    
   }
 
   Product copyWith({

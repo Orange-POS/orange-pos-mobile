@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_brand.dart';
+
 class AppPage extends StatelessWidget {
   final String title;
   final Widget child;
@@ -17,6 +19,7 @@ class AppPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppBrand.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 14, 24, 16),
@@ -30,14 +33,7 @@ class AppPage extends StatelessWidget {
               const SizedBox(height: 12),
               Expanded(child: child),
               const SizedBox(height: 12),
-              const Text(
-                'Powered by OrangePOS',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              const _AppFooter(),
             ],
           ),
         ),
@@ -69,7 +65,7 @@ class _AppHeader extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (leadingIcon != null) ...[
-                  Icon(leadingIcon, size: 18),
+                  Icon(leadingIcon, size: 18, color: AppBrand.primary),
                   const SizedBox(width: 8),
                 ],
                 Flexible(
@@ -78,7 +74,8 @@ class _AppHeader extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
+                      color: AppBrand.textPrimary,
                     ),
                   ),
                 ),
@@ -91,12 +88,37 @@ class _AppHeader extends StatelessWidget {
             child: IconButton.filledTonal(
               onPressed: onProfilePressed,
               icon: const Icon(Icons.person_outline),
-              color: Colors.black,
-              style: IconButton.styleFrom(backgroundColor: Colors.black12),
+              color: AppBrand.primary,
+              style: IconButton.styleFrom(
+                backgroundColor: AppBrand.primaryLight,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AppFooter extends StatelessWidget {
+  const _AppFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.asset(
+      AppBrand.orangePosLogo,
+      width: 110,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return const Text(
+          'Powered by OrangePOS',
+          style: TextStyle(
+            fontSize: 12,
+            color: AppBrand.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        );
+      },
     );
   }
 }

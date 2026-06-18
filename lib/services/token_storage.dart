@@ -11,10 +11,7 @@ class TokenStorage {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   Future<void> saveToken(String token) async {
-    await _storage.write(
-      key: _tokenKey,
-      value: token,
-    );
+    await _storage.write(key: _tokenKey, value: token);
   }
 
   Future<String?> getToken() async {
@@ -22,10 +19,7 @@ class TokenStorage {
   }
 
   Future<void> saveBackendUrl(String backendUrl) async {
-    await _storage.write(
-      key: _backendUrlKey,
-      value: backendUrl,
-    );
+    await _storage.write(key: _backendUrlKey, value: backendUrl);
   }
 
   Future<String?> getBackendUrl() async {

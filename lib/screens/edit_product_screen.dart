@@ -8,17 +8,20 @@ import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
+import '../theme/app_brand.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
   final String authToken;
   final String backendUrl;
+  final ProductReferences? initialReferences;
 
   const EditProductScreen({
     super.key,
     required this.product,
     required this.authToken,
     required this.backendUrl,
+    this.initialReferences,
   });
 
   @override
@@ -31,10 +34,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   late final TextEditingController nameController;
 
-  ProductReferences references = const ProductReferences();
-
+  ProductReferences? references;
   int? selectedTaxId;
-  bool isLoadingReferences = true;
+  bool isLoadingReferences = false;
   bool isSaving = false;
   String? errorMessage;
 
@@ -43,11 +45,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
     super.initState();
 
     nameController = TextEditingController(text: widget.product.name);
+
+    references = widget.initialReferences;
     selectedTaxId = widget.product.taxes.isNotEmpty
         ? widget.product.taxes.first.id
         : null;
 
-    loadReferences();
+    if (references == null) {
+      unawaited(loadReferences());
+    } else {
+      selectedTaxId = _safeSelectedTaxId();
+    }
   }
 
   @override
@@ -57,53 +65,46 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   Future<void> loadReferences() async {
+    setState(() {
+      isLoadingReferences = true;
+      errorMessage = null;
+    });
+
     try {
       final loadedReferences = await productService.loadProductReferences(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
       );
 
-      if (!mounted) {
-        return;
-      }
-
-      final uniqueTaxes = _uniqueTaxesFrom(loadedReferences.taxes);
-
-      final hasSelectedTax =
-          selectedTaxId != null &&
-          uniqueTaxes.any((tax) => tax.id == selectedTaxId);
+      if (!mounted) return;
 
       setState(() {
-        references = ProductReferences(
-          defaultTaxIds: loadedReferences.defaultTaxIds,
-          taxes: uniqueTaxes,
-        );
-        selectedTaxId = hasSelectedTax ? selectedTaxId : null;
-        isLoadingReferences = false;
+        references = loadedReferences;
+        selectedTaxId = _safeSelectedTaxId();
       });
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
-
-      final referenceError = error is ApiClientException
-          ? error.userMessage
-          : error.toString().replaceFirst('Exception: ', '');
+    } on ApiClientException catch (error) {
+      if (!mounted) return;
 
       setState(() {
-        references = const ProductReferences();
-        selectedTaxId = null;
-        isLoadingReferences = false;
-        errorMessage = referenceError;
+        errorMessage = error.userMessage;
       });
+    } catch (_) {
+      if (!mounted) return;
 
-      debugPrint('Product references failed to load: $error');
+      setState(() {
+        errorMessage = 'Could not load product references.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoadingReferences = false;
+        });
+      }
     }
   }
 
   Future<void> saveProduct() async {
     final name = nameController.text.trim();
-    final safeTaxId = _safeSelectedTaxId();
 
     if (name.isEmpty) {
       setState(() {
@@ -118,6 +119,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     try {
+      final safeTaxId = _safeSelectedTaxId();
+
       final updatedProduct = await productService.updateProduct(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
@@ -126,145 +129,181 @@ class _EditProductScreenState extends State<EditProductScreen> {
         taxIds: safeTaxId == null ? null : [safeTaxId],
       );
 
-      unawaited(
-        analyticsService.trackEvent(
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          eventName: 'product_updated',
-          screen: 'edit_product',
-          metadata: {'product_id': updatedProduct.id, 'tax_id': safeTaxId},
-        ),
+      await analyticsService.trackEvent(
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+        eventName: 'product_updated',
+        screen: 'edit_product',
+        metadata: {
+          'product_id': widget.product.id,
+          'barcode': widget.product.barcode,
+        },
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      Navigator.pop(context, updatedProduct);
-    } catch (error) {
-      final updateError = error is ApiClientException
-          ? error.userMessage
-          : error.toString().replaceFirst('Exception: ', '');
-
-      unawaited(
-        analyticsService.trackError(
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          errorType: 'api_error',
-          screen: 'edit_product',
-          message: updateError,
-          details: error.toString(),
-        ),
-      );
-
-      if (!mounted) {
-        return;
-      }
+      Navigator.of(context).pop(updatedProduct);
+    } on ApiClientException catch (error) {
+      if (!mounted) return;
 
       setState(() {
-        isSaving = false;
-        errorMessage = updateError;
+        errorMessage = error.userMessage;
       });
+    } catch (_) {
+      if (!mounted) return;
 
-      debugPrint('Product update failed: $error');
+      setState(() {
+        errorMessage = 'Could not update product.';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isSaving = false;
+        });
+      }
     }
+  }
+
+  List<ProductTax> _uniqueTaxes() {
+    return _uniqueTaxesFrom(references?.taxes ?? widget.product.taxes);
   }
 
   List<ProductTax> _uniqueTaxesFrom(List<ProductTax> taxes) {
     final seenIds = <int>{};
+    final uniqueTaxes = <ProductTax>[];
 
-    return taxes.where((tax) {
-      return seenIds.add(tax.id);
-    }).toList();
-  }
+    for (final tax in taxes) {
+      if (seenIds.add(tax.id)) {
+        uniqueTaxes.add(tax);
+      }
+    }
 
-  List<ProductTax> _uniqueTaxes() {
-    return _uniqueTaxesFrom(references.taxes);
+    return uniqueTaxes;
   }
 
   int? _safeSelectedTaxId() {
-    final selectedId = selectedTaxId;
+    final currentTaxId = selectedTaxId;
+    if (currentTaxId == null) return null;
 
-    if (selectedId == null) {
-      return null;
-    }
-
-    final taxExists = _uniqueTaxes().any((tax) => tax.id == selectedId);
-
-    return taxExists ? selectedId : null;
+    final exists = _uniqueTaxes().any((tax) => tax.id == currentTaxId);
+    return exists ? currentTaxId : null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final taxes = _uniqueTaxes();
+    final safeTaxId = _safeSelectedTaxId();
     final referenceFieldsDisabled = isSaving || isLoadingReferences;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppBrand.loginBackground,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(28, 16, 28, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _EditProductHeader(),
-              const SizedBox(height: 32),
-              const _FieldLabel(label: 'Product Name', secondary: 'Required'),
-              TextField(
-                controller: nameController,
-                enabled: !isSaving,
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                26,
+                24,
+                26,
+                MediaQuery.viewInsetsOf(context).bottom + 24,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 48,
+                ),
+                child: IntrinsicHeight(
+                  child: Column(
+                    children: [
+                      _EditProductHeader(barcode: widget.product.barcode),
+                      const SizedBox(height: 42),
+
+                      const _FieldLabel(
+                        label: 'Product Name',
+                        secondary: 'Required',
+                      ),
+                      _OrangeTextField(
+                        controller: nameController,
+                        enabled: !isSaving,
+                        hintText: 'Name',
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      _FieldLabel(
+                        label: 'Tax',
+                        secondary: isLoadingReferences
+                            ? 'Loading...'
+                            : 'Default',
+                      ),
+                      DropdownButtonFormField<int?>(
+                        initialValue: safeTaxId,
+                        isExpanded: true,
+                        decoration: _orangeInputDecoration(),
+                        icon: const Icon(Icons.keyboard_arrow_down),
+                        items: [
+                          const DropdownMenuItem<int?>(
+                            value: null,
+                            child: Text('No tax selected'),
+                          ),
+                          ...taxes.map(
+                            (tax) => DropdownMenuItem<int?>(
+                              value: tax.id,
+                              child: Text(tax.name),
+                            ),
+                          ),
+                        ],
+                        onChanged: referenceFieldsDisabled
+                            ? null
+                            : (value) {
+                                setState(() {
+                                  selectedTaxId = value;
+                                });
+                              },
+                      ),
+
+                      if (errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            errorMessage!,
+                            style: const TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+
+                      const SizedBox(height: 150),
+
+                      SizedBox(
+                        width: double.infinity,
+                        height: 74,
+                        child: FilledButton.icon(
+                          onPressed: isSaving ? null : saveProduct,
+                          icon: isSaving
+                              ? const SizedBox.square(
+                                  dimension: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.add_circle, size: 24),
+                          label: Text(isSaving ? 'Saving...' : 'Save Changes'),
+                        ),
+                      ),
+
+                      const Spacer(),
+                      const _EditProductFooter(),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              _FieldLabel(
-                label: 'Sales Tax',
-                secondary: isLoadingReferences ? 'Loading...' : 'Current',
-              ),
-              DropdownButtonFormField<int?>(
-                initialValue: _safeSelectedTaxId(),
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                items: [
-                  const DropdownMenuItem<int?>(
-                    value: null,
-                    child: Text('No tax selected'),
-                  ),
-                  ..._uniqueTaxes().map(
-                    (tax) => DropdownMenuItem<int?>(
-                      value: tax.id,
-                      child: Text(tax.name),
-                    ),
-                  ),
-                ],
-                onChanged: referenceFieldsDisabled
-                    ? null
-                    : (value) {
-                        setState(() {
-                          selectedTaxId = value;
-                        });
-                      },
-              ),
-              if (errorMessage != null) ...[
-                const SizedBox(height: 16),
-                Text(errorMessage!, style: const TextStyle(color: Colors.red)),
-              ],
-              const SizedBox(height: 42),
-              _ActionButton(
-                label: isSaving ? 'Saving...' : 'Save Changes',
-                icon: isSaving ? null : Icons.save_outlined,
-                filled: true,
-                onPressed: isSaving ? null : saveProduct,
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -272,24 +311,31 @@ class _EditProductScreenState extends State<EditProductScreen> {
 }
 
 class _EditProductHeader extends StatelessWidget {
-  const _EditProductHeader();
+  final String barcode;
+
+  const _EditProductHeader({required this.barcode});
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       children: [
-        SizedBox(width: 48),
+        const SizedBox(width: 48),
         Expanded(
           child: Text(
-            'Edit Name & Tax',
+            barcode,
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
+            ),
           ),
         ),
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: Colors.black12,
-          child: Icon(Icons.person_outline, color: Colors.black),
+        const CircleAvatar(
+          radius: 22,
+          backgroundColor: AppBrand.primaryLight,
+          child: Icon(Icons.person_outline, color: AppBrand.primary, size: 22),
         ),
       ],
     );
@@ -298,58 +344,104 @@ class _EditProductHeader extends StatelessWidget {
 
 class _FieldLabel extends StatelessWidget {
   final String label;
-  final String? secondary;
+  final String secondary;
 
-  const _FieldLabel({required this.label, this.secondary});
+  const _FieldLabel({required this.label, required this.secondary});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 7),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          Text(label),
-          const Spacer(),
-          if (secondary != null)
-            Text(
-              secondary!,
-              style: const TextStyle(fontSize: 12, color: Colors.black54),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
             ),
+          ),
+          const Spacer(),
+          Text(
+            secondary,
+            style: const TextStyle(fontSize: 14, color: AppBrand.textDarkGrey),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final IconData? icon;
-  final bool filled;
-  final VoidCallback? onPressed;
+class _OrangeTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool enabled;
+  final String hintText;
 
-  const _ActionButton({
-    required this.label,
-    required this.filled,
-    required this.onPressed,
-    this.icon,
+  const _OrangeTextField({
+    required this.controller,
+    required this.enabled,
+    required this.hintText,
   });
 
   @override
   Widget build(BuildContext context) {
-    final child = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (icon != null) ...[Icon(icon, size: 18), const SizedBox(width: 8)],
-        Text(label),
-      ],
+    return TextField(
+      controller: controller,
+      enabled: enabled,
+      textInputAction: TextInputAction.done,
+      style: const TextStyle(fontSize: 16, color: AppBrand.textDarkGrey),
+      decoration: _orangeInputDecoration(hintText: hintText),
     );
+  }
+}
 
-    return SizedBox(
-      width: double.infinity,
-      height: 58,
-      child: filled
-          ? FilledButton(onPressed: onPressed, child: child)
-          : OutlinedButton(onPressed: onPressed, child: child),
+InputDecoration _orangeInputDecoration({String? hintText}) {
+  return InputDecoration(
+    hintText: hintText,
+    hintStyle: const TextStyle(fontSize: 16, color: AppBrand.textSecondary),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+    ),
+    disabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(6),
+      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+    ),
+  );
+}
+
+class _EditProductFooter extends StatelessWidget {
+  const _EditProductFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: 'Powered By ',
+            style: TextStyle(
+              color: AppBrand.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          TextSpan(
+            text: 'OrangePos',
+            style: TextStyle(
+              color: AppBrand.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

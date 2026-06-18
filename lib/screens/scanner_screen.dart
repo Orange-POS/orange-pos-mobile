@@ -8,12 +8,13 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../services/token_storage.dart';
-import '../widgets/app_page.dart';
+
 import 'add_product_screen.dart';
 import 'barcode_not_found_screen.dart';
 import 'barcode_scanner_screen.dart';
 import 'login_screen.dart';
 import 'product_screen.dart';
+import '../theme/app_brand.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -288,92 +289,179 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return AppPage(
-      title: 'Scanner',
-      leadingIcon: Icons.view_week,
-      onProfilePressed: logout,
-      child: Column(
-        children: [
-          const Spacer(),
-          GestureDetector(
-            onTap: isLoading ? null : scanBarcode,
-            child: Container(
-              width: double.infinity,
-              height: 210,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(color: Colors.black, width: 2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
+    return Scaffold(
+      backgroundColor: AppBrand.loginBackground,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 24, 30, 24),
+          child: Column(
+            children: [
+              _ScannerHeader(onProfilePressed: logout),
+              const SizedBox(height: 210),
+              GestureDetector(
+                onTap: isLoading ? null : scanBarcode,
+                child: Container(
+                  width: 280,
+                  height: 177,
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    border: Border.all(color: AppBrand.primary, width: 4),
+                  ),
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : const Icon(
                           Icons.barcode_reader,
-                          size: 120,
-                          color: Colors.black,
+                          size: 135,
+                          color: AppBrand.primary,
                         ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Tap to Scan Product',
-                          style: TextStyle(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    ),
+                ),
+              ),
+              const SizedBox(height: 28),
+              const Text(
+                'Tap to Scan',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: AppBrand.textPrimary,
+                ),
+              ),
+              if (errorMessage != null) ...[
+                const SizedBox(height: 18),
+                _ScannerErrorBox(
+                  errorMessage: errorMessage!,
+                  errorDetails: errorDetails,
+                  onCopyDetails: copyErrorDetails,
+                ),
+              ],
+              const Spacer(),
+              const _ScannerFooter(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ScannerHeader extends StatelessWidget {
+  final VoidCallback onProfilePressed;
+
+  const _ScannerHeader({required this.onProfilePressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(width: 48),
+        const Expanded(
+          child: Text(
+            'Scanner',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: AppBrand.textDarkGrey,
             ),
           ),
-          if (errorMessage != null) ...[
-            const SizedBox(height: 22),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF3F3),
-                border: Border.all(color: const Color(0xFFFFB4B4)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Product Lookup Failed',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.red,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    errorMessage!,
-                    style: const TextStyle(color: Colors.black87, fontSize: 14),
-                  ),
-                  if (errorDetails != null) ...[
-                    const SizedBox(height: 12),
-                    SelectableText(
-                      errorDetails!,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    OutlinedButton.icon(
-                      onPressed: copyErrorDetails,
-                      icon: const Icon(Icons.copy, size: 18),
-                      label: const Text('Copy Error Details'),
-                    ),
-                  ],
-                ],
+        ),
+        SizedBox(
+          width: 48,
+          height: 48,
+          child: IconButton.filledTonal(
+            onPressed: onProfilePressed,
+            icon: const Icon(Icons.person_outline),
+            color: AppBrand.textPrimary,
+            style: IconButton.styleFrom(backgroundColor: AppBrand.white),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ScannerFooter extends StatelessWidget {
+  const _ScannerFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: 'Powered By ',
+            style: TextStyle(
+              color: AppBrand.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          TextSpan(
+            text: 'OrangePos',
+            style: TextStyle(
+              color: AppBrand.primary,
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScannerErrorBox extends StatelessWidget {
+  final String errorMessage;
+  final String? errorDetails;
+  final VoidCallback onCopyDetails;
+
+  const _ScannerErrorBox({
+    required this.errorMessage,
+    required this.errorDetails,
+    required this.onCopyDetails,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppBrand.errorBackground,
+        border: Border.all(color: AppBrand.errorBorder),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Product Lookup Failed',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: Colors.red,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            errorMessage,
+            style: const TextStyle(color: AppBrand.textPrimary, fontSize: 13),
+          ),
+          if (errorDetails != null) ...[
+            const SizedBox(height: 10),
+            SelectableText(
+              errorDetails!,
+              style: const TextStyle(
+                fontSize: 10,
+                color: AppBrand.textSecondary,
               ),
             ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onCopyDetails,
+              icon: const Icon(Icons.copy, size: 16),
+              label: const Text('Copy Error Details'),
+            ),
           ],
-          const Spacer(),
         ],
       ),
     );

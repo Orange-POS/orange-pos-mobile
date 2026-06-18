@@ -48,12 +48,12 @@ class QrLoginData {
   }
 
   static DateTime _parseExpiresAt(String value) {
-  final normalizedValue = value.contains('T')
-      ? value
-      : '${value.replaceFirst(' ', 'T')}Z';
+    final normalizedValue = value.contains('T')
+        ? value
+        : '${value.replaceFirst(' ', 'T')}Z';
 
-  return DateTime.parse(normalizedValue);
-}
+    return DateTime.parse(normalizedValue);
+  }
 
   static bool _isValidUrl(String value) {
     final uri = Uri.tryParse(value);

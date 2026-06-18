@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../theme/app_brand.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -42,7 +43,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       appBar: AppBar(
         title: const Text('Scan Product Barcode'),
         backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        foregroundColor: AppBrand.primary,
       ),
       body: Stack(
         children: [
@@ -52,7 +53,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               width: 320,
               height: 150,
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.white, width: 3),
+                border: Border.all(color: AppBrand.primary, width: 3),
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
@@ -66,7 +67,9 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.72),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white24),
+                border: Border.all(
+                  color: AppBrand.primary.withValues(alpha: 0.45),
+                ),
               ),
               child: const Text(
                 'Point your camera at the product barcode.',

@@ -2,10 +2,7 @@ class PosCategory {
   final int id;
   final String name;
 
-  const PosCategory({
-    required this.id,
-    required this.name,
-  });
+  const PosCategory({required this.id, required this.name});
 
   factory PosCategory.fromJson(Map<String, dynamic> json) {
     return PosCategory(
@@ -15,10 +12,7 @@ class PosCategory {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
+    return {'id': id, 'name': name};
   }
 
   static int _parseInt(dynamic value) {

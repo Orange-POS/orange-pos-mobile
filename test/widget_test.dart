@@ -2,17 +2,19 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_app/app/inventory_tracker_app.dart';
+import 'package:flutter_app/theme/app_brand.dart';
 
 void main() {
-  testWidgets('Inventory Tracker app opens login screen', (tester) async {
+  testWidgets('OrangeONE app opens login screen', (tester) async {
     FlutterSecureStorage.setMockInitialValues({});
 
     await tester.pumpWidget(const InventoryTrackerApp());
 
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('Inventory Tracker'), findsOneWidget);
-    expect(find.text('Tap to Scan Login QR'), findsOneWidget);
-    expect(find.text('Scan the QR code shown in Odoo POS.'), findsOneWidget);
+    expect(find.text(AppBrand.appName), findsOneWidget);
+    expect(find.text('Tap to Scan'), findsOneWidget);
+    expect(find.text('Powered By'), findsOneWidget);
   });
 }

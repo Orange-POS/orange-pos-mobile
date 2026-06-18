@@ -2,10 +2,7 @@ class ProductCategory {
   final int id;
   final String name;
 
-  const ProductCategory({
-    required this.id,
-    required this.name,
-  });
+  const ProductCategory({required this.id, required this.name});
 
   factory ProductCategory.fromJson(Map<String, dynamic> json) {
     return ProductCategory(
@@ -15,10 +12,7 @@ class ProductCategory {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
+    return {'id': id, 'name': name};
   }
 
   static int _parseInt(dynamic value) {

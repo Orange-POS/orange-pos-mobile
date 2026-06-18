@@ -1,5 +1,3 @@
-
-
 import '../models/qr_login_data.dart';
 import 'api_client.dart';
 
@@ -8,9 +6,9 @@ class AuthService {
 
   Future<String> loginWithQr(QrLoginData qrLoginData) async {
     final requestBody = {
-  'jsonrpc': '2.0',
-  'method': 'call',
-  'params': {
+      'jsonrpc': '2.0',
+      'method': 'call',
+      'params': {
         'challenge': qrLoginData.challenge,
         'nonce': qrLoginData.nonce,
         'pos_session_id': qrLoginData.posSessionId,

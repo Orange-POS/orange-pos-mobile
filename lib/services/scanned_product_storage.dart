@@ -17,10 +17,7 @@ class ScannedProductStorage {
   Future<void> saveProducts(List<Product> products) async {
     final jsonList = products.map((product) => product.toJson()).toList();
 
-    await _storage.write(
-      key: _productsKey,
-      value: jsonEncode(jsonList),
-    );
+    await _storage.write(key: _productsKey, value: jsonEncode(jsonList));
   }
 
   Future<List<Product>> getProducts() async {
