@@ -8,6 +8,7 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -58,12 +59,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
         backendUrl: widget.backendUrl,
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       final uniqueTaxes = _uniqueTaxesFrom(loadedReferences.taxes);
-
       final defaultTaxId = loadedReferences.defaultTaxIds.isNotEmpty
           ? loadedReferences.defaultTaxIds.first
           : null;
@@ -83,9 +81,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     } catch (error) {
       debugPrint('Product references failed to load: $error');
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       setState(() {
         references = const ProductReferences();
@@ -143,15 +139,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
         ),
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       Navigator.pop(context, createdProduct);
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       final createError = error is ApiClientException
           ? error.userMessage
@@ -192,9 +184,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   int? _safeSelectedTaxId() {
     final selectedId = selectedTaxId;
 
-    if (selectedId == null) {
-      return null;
-    }
+    if (selectedId == null) return null;
 
     final taxExists = _uniqueTaxes().any((tax) => tax.id == selectedId);
 
@@ -206,31 +196,29 @@ class _AddProductScreenState extends State<AddProductScreen> {
     final referenceFieldsDisabled = isSaving || isLoadingReferences;
 
     return Scaffold(
-      backgroundColor: AppBrand.loginBackground,
+      backgroundColor: AppBrand.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: EdgeInsets.fromLTRB(
-                26,
-                24,
-                26,
-                MediaQuery.viewInsetsOf(context).bottom + 24,
-              ),
+              padding: AppChrome.scrollPadding(context),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
+                  minHeight: constraints.maxHeight - 43,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      _AddProductHeader(barcode: widget.barcode),
-                      const SizedBox(height: 52),
-                      const _FieldLabel(
-                        label: 'Product Name',
-                        secondary: 'Required',
+                      AppHeader.title(
+                        title: 'Product Not Found',
+                        onBackPressed: () => Navigator.pop(context),
                       ),
+                      const SizedBox(height: 36),
+                      _ProductNotFoundBanner(barcode: widget.barcode),
+                      const SizedBox(height: 38),
+                      const _FieldLabel(label: 'Product Name', secondary: null),
+                      const SizedBox(height: 10),
                       _OrangeTextField(
                         controller: nameController,
                         enabled: !isSaving,
@@ -242,10 +230,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         label: 'Product Price',
                         secondary: 'Required',
                       ),
+                      const SizedBox(height: 10),
                       _OrangeTextField(
                         controller: priceController,
                         enabled: !isSaving,
-                        hintText: 'CHF',
+                        hintText: 'Price',
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
@@ -253,11 +242,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       const SizedBox(height: 20),
                       _FieldLabel(
                         label: 'Tax',
-                        secondary: isLoadingReferences ? 'Loading...' : 'Default',
+                        secondary: isLoadingReferences
+                            ? 'Loading...'
+                            : 'Default',
                       ),
+                      const SizedBox(height: 10),
                       DropdownButtonFormField<int?>(
                         initialValue: _safeSelectedTaxId(),
+                        isExpanded: true,
                         decoration: _orangeInputDecoration(),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Color(0xFF535353),
+                        ),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
@@ -279,7 +276,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                               },
                       ),
                       if (errorMessage != null) ...[
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -292,27 +289,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                       ],
                       const SizedBox(height: 58),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 74,
-                        child: FilledButton.icon(
-                          onPressed: isSaving ? null : saveProduct,
-                          icon: isSaving
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.add_circle, size: 24),
-                          label: Text(
-                            isSaving ? 'Saving...' : 'Add New Product',
-                          ),
-                        ),
+                      _AddProductButton(
+                        isSaving: isSaving,
+                        onPressed: isSaving ? null : saveProduct,
                       ),
                       const Spacer(),
-                      const _AddProductFooter(),
+                      const AppFooter(),
                     ],
                   ),
                 ),
@@ -325,59 +307,112 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 }
 
-InputDecoration _orangeInputDecoration({String? hintText}) {
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: const TextStyle(
-      fontSize: 20,
-      color: AppBrand.textSecondary,
-    ),
-    contentPadding: const EdgeInsets.symmetric(
-      horizontal: 18,
-      vertical: 18,
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
-    ),
-    disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 3),
-    ),
-  );
-}
-
-class _AddProductHeader extends StatelessWidget {
+class _ProductNotFoundBanner extends StatelessWidget {
   final String barcode;
 
-  const _AddProductHeader({required this.barcode});
+  const _ProductNotFoundBanner({required this.barcode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          height: 67,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFC6C6).withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFFF6464).withValues(alpha: 0.2),
+              width: 4,
+            ),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.error_outline, color: Color(0xFFBD0A0A), size: 30),
+              SizedBox(width: 18),
+              Expanded(
+                child: Text(
+                  'Product Not Found',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Color(0xFFBD0A0A),
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Scanned Barcode',
+            style: TextStyle(
+              fontSize: 16,
+              color: AppBrand.textDarkGrey,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Icon(
+              Icons.qr_code_scanner,
+              color: AppBrand.primary,
+              size: 46,
+            ),
+            const SizedBox(width: 30),
+            Expanded(
+              child: Text(
+                barcode,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 24,
+                  color: AppBrand.textDarkGrey,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FieldLabel extends StatelessWidget {
+  final String label;
+  final String? secondary;
+
+  const _FieldLabel({required this.label, required this.secondary});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const SizedBox(width: 48),
-        Expanded(
-          child: Text(
-            barcode,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            color: AppBrand.textDarkGrey,
+            fontWeight: FontWeight.w400,
           ),
         ),
-        const CircleAvatar(
-          radius: 24,
-          backgroundColor: AppBrand.primaryLight,
-          child: Icon(Icons.person_outline, color: AppBrand.primary),
-        ),
+        const Spacer(),
+        if (secondary != null)
+          Text(
+            secondary!,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppBrand.textDarkGrey,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
       ],
     );
   }
@@ -405,75 +440,70 @@ class _OrangeTextField extends StatelessWidget {
       enabled: enabled,
       keyboardType: keyboardType,
       textInputAction: textInputAction,
-      style: const TextStyle(
-        fontSize: 20,
-        color: AppBrand.textDarkGrey,
-      ),
+      style: const TextStyle(fontSize: 16, color: AppBrand.textDarkGrey),
       decoration: _orangeInputDecoration(hintText: hintText),
     );
   }
 }
 
-class _FieldLabel extends StatelessWidget {
-  final String label;
-  final String? secondary;
-
-  const _FieldLabel({required this.label, this.secondary});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
-          ),
-          const Spacer(),
-          if (secondary != null)
-            Text(
-              secondary!,
-              style: const TextStyle(
-                fontSize: 18,
-                color: AppBrand.textDarkGrey,
-              ),
-            ),
-        ],
-      ),
-    );
-  }
+InputDecoration _orangeInputDecoration({String? hintText}) {
+  return InputDecoration(
+    hintText: hintText,
+    hintStyle: const TextStyle(fontSize: 16, color: Color(0xFF535353)),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
+    ),
+    disabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
+    ),
+  );
 }
 
-class _AddProductFooter extends StatelessWidget {
-  const _AddProductFooter();
+class _AddProductButton extends StatelessWidget {
+  final bool isSaving;
+  final VoidCallback? onPressed;
+
+  const _AddProductButton({required this.isSaving, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return const Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Powered By ',
-            style: TextStyle(
-              color: AppBrand.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+    return SizedBox(
+      width: double.infinity,
+      height: 76,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppBrand.primaryDark,
+          foregroundColor: AppBrand.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          children: [
+            const Spacer(),
+            isSaving
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppBrand.white,
+                    ),
+                  )
+                : const Icon(Icons.add_circle, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              isSaving ? 'Saving...' : 'Add New Product',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-          ),
-          TextSpan(
-            text: 'OrangePos',
-            style: TextStyle(
-              color: AppBrand.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }

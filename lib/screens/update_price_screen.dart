@@ -7,6 +7,7 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -36,7 +37,6 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   @override
   void initState() {
     super.initState();
-
     priceController = TextEditingController();
   }
 
@@ -87,15 +87,11 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         ),
       );
 
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       Navigator.pop(context, updatedProduct);
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
       final updateError = error is ApiClientException
           ? error.userMessage
@@ -124,44 +120,41 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppBrand.loginBackground,
+      backgroundColor: AppBrand.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: EdgeInsets.fromLTRB(
-                22,
-                24,
-                22,
-                MediaQuery.viewInsetsOf(context).bottom + 24,
-              ),
+              padding: AppChrome.scrollPadding(context),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
+                  minHeight: constraints.maxHeight - 43,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      const _UpdatePriceHeader(),
-                      const SizedBox(height: 32),
-                      _CurrentPriceCard(
-                        productName: widget.product.name,
-                        currentPrice: priceWithoutCurrency,
+                      AppHeader.title(
+                        title: 'Update Price',
+                        onBackPressed: () => Navigator.pop(context),
                       ),
+                      const SizedBox(height: 13),
+                      _ProductNameCard(productName: widget.product.name),
+                      const SizedBox(height: 34),
+                      _CurrentPriceSection(price: priceWithoutCurrency),
                       const SizedBox(height: 34),
                       const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'New Price',
                           style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
+                            fontSize: 17,
                             color: AppBrand.textDarkGrey,
+                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 12),
                       TextField(
                         controller: priceController,
                         enabled: !isSaving,
@@ -170,45 +163,46 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                           decimal: true,
                         ),
                         style: const TextStyle(
-                          fontSize: 24,
+                          fontSize: 21,
                           fontWeight: FontWeight.w600,
                           color: AppBrand.textDarkGrey,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'CHF',
+                          hintText: 'CHF  XXX.XX',
                           hintStyle: const TextStyle(
-                            fontSize: 24,
-                            color: AppBrand.textSecondary,
+                            fontSize: 21,
+                            color: Color(0xFF535353),
+                            fontWeight: FontWeight.w400,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 18,
-                            vertical: 22,
+                            vertical: 18,
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
-                              color: AppBrand.primary,
-                              width: 3,
+                              color: AppBrand.primaryDark,
+                              width: 4,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
-                              color: AppBrand.primary,
-                              width: 3,
+                              color: AppBrand.primaryDark,
+                              width: 4,
                             ),
                           ),
                           disabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
-                              color: AppBrand.primary,
-                              width: 3,
+                              color: AppBrand.primaryDark,
+                              width: 4,
                             ),
                           ),
                         ),
                       ),
                       if (errorMessage != null) ...[
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -220,26 +214,13 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 80),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 74,
-                        child: FilledButton.icon(
-                          onPressed: isSaving ? null : savePrice,
-                          icon: isSaving
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.save, size: 24),
-                          label: Text(isSaving ? 'Saving...' : 'Save Price'),
-                        ),
+                      const SizedBox(height: 82),
+                      _UpdatePriceButton(
+                        isSaving: isSaving,
+                        onPressed: isSaving ? null : savePrice,
                       ),
                       const Spacer(),
-                      const _UpdatePriceFooter(),
+                      const AppFooter(),
                     ],
                   ),
                 ),
@@ -252,131 +233,147 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   }
 }
 
-class _UpdatePriceHeader extends StatelessWidget {
-  const _UpdatePriceHeader();
+class _ProductNameCard extends StatelessWidget {
+  final String productName;
+
+  const _ProductNameCard({required this.productName});
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        SizedBox(width: 48),
-        Expanded(
+    return Container(
+      width: double.infinity,
+      height: 141,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFEF6EE),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppBrand.primaryDark.withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Scrollbar(
+        thumbVisibility: false,
+        child: SingleChildScrollView(
           child: Text(
-            'Update Price',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
+            productName,
+            style: const TextStyle(
+              fontSize: 34,
               fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
+              height: 1.18,
+              color: AppBrand.primaryDark,
             ),
           ),
         ),
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: AppBrand.primaryLight,
-          child: Icon(Icons.person_outline, color: AppBrand.primary),
+      ),
+    );
+  }
+}
+
+class _CurrentPriceSection extends StatelessWidget {
+  final String price;
+
+  const _CurrentPriceSection({required this.price});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 50,
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.only(top: 4),
+              child: Icon(Icons.sell, size: 34, color: AppBrand.primary),
+            ),
+          ),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Current Price',
+                style: TextStyle(
+                  fontSize: 17,
+                  color: AppBrand.textDarkGrey,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'CHF',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                price,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 }
 
-class _CurrentPriceCard extends StatelessWidget {
-  final String productName;
-  final String currentPrice;
+class _UpdatePriceButton extends StatelessWidget {
+  final bool isSaving;
+  final VoidCallback? onPressed;
 
-  const _CurrentPriceCard({
-    required this.productName,
-    required this.currentPrice,
-  });
+  const _UpdatePriceButton({required this.isSaving, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 26, 16, 24),
-      decoration: BoxDecoration(
-        color: AppBrand.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppBrand.loginBackground, width: 4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            productName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w800,
-              height: 1,
-              color: AppBrand.primary,
+      height: 76,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppBrand.primaryDark,
+          foregroundColor: AppBrand.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          children: [
+            const Spacer(),
+            isSaving
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppBrand.white,
+                    ),
+                  )
+                : const Icon(Icons.edit_square, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              isSaving ? 'Saving...' : 'Update Price',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-          ),
-          const SizedBox(height: 28),
-          const Text(
-            'Current Price',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w400,
-              color: AppBrand.textDarkGrey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(
-                  text: 'CHF ',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w800,
-                    color: AppBrand.textDarkGrey,
-                  ),
-                ),
-                TextSpan(
-                  text: currentPrice,
-                  style: const TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.w400,
-                    color: AppBrand.textDarkGrey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _UpdatePriceFooter extends StatelessWidget {
-  const _UpdatePriceFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Powered By ',
-            style: TextStyle(
-              color: AppBrand.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          TextSpan(
-            text: 'OrangePos',
-            style: TextStyle(
-              color: AppBrand.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+            const Spacer(),
+            const Icon(Icons.chevron_right, size: 36),
+          ],
+        ),
       ),
     );
   }

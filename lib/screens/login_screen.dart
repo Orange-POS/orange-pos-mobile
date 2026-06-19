@@ -7,6 +7,7 @@ import '../services/analytics_service.dart';
 import '../services/auth_service.dart';
 import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 
 import 'qr_login_scanner_screen.dart';
 import 'scanner_screen.dart';
@@ -23,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final AuthService authService = AuthService();
   final TokenStorage tokenStorage = TokenStorage.instance;
   final AnalyticsService analyticsService = AnalyticsService();
+
   bool isLoggingIn = false;
   String? authToken;
   String? errorMessage;
@@ -129,41 +131,63 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppBrand.loginBackground,
+      backgroundColor: AppBrand.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(30, 24, 30, 24),
+          padding: AppChrome.pagePadding,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const _LoginHeader(),
-              const Spacer(),
-              GestureDetector(
-                onTap: isLoggingIn ? null : openScanner,
-                child: Container(
-                  width: 272,
-                  height: 283,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(color: AppBrand.primary, width: 4),
-                    borderRadius: BorderRadius.circular(45),
-                  ),
-                  child: isLoggingIn
-                      ? const Center(child: CircularProgressIndicator())
-                      : Image.asset(
-                          AppBrand.loginScanIcon,
-                          width: 150,
-                          height: 150,
-                          fit: BoxFit.contain,
-                        ),
+              const AppHeader.brand(),
+              const SizedBox(height: 31),
+              const Text(
+                'Login',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
                 ),
               ),
-              const SizedBox(height: 14),
-              const Text(
-                'Tap to Scan',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: AppBrand.textPrimary,
+              const Spacer(flex: 3),
+              Center(
+                child: GestureDetector(
+                  onTap: isLoggingIn ? null : openScanner,
+                  child: Container(
+                    width: 287,
+                    height: 287,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF6EE),
+                      borderRadius: BorderRadius.circular(49),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppBrand.primaryDark.withValues(alpha: 0.18),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: isLoggingIn
+                        ? const Center(child: CircularProgressIndicator())
+                        : Center(
+                            child: Image.asset(
+                              AppBrand.loginScanIcon,
+                              width: 230,
+                              height: 230,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+              const Center(
+                child: Text(
+                  'Tap to Scan',
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    color: AppBrand.textDarkGrey,
+                  ),
                 ),
               ),
               if (errorMessage != null) ...[
@@ -187,97 +211,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ],
-              const Spacer(),
-              const _LoginFooter(),
+              const Spacer(flex: 4),
+              const AppFooter(),
             ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _LoginHeader extends StatelessWidget {
-  const _LoginHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        _OrangeOneTitle(),
-        Spacer(),
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: AppBrand.white,
-          child: Icon(Icons.person_outline, color: AppBrand.textPrimary),
-        ),
-      ],
-    );
-  }
-}
-
-class _OrangeOneTitle extends StatelessWidget {
-  const _OrangeOneTitle();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Orange',
-            style: TextStyle(
-              color: AppBrand.primary,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          TextSpan(
-            text: 'ONE',
-            style: TextStyle(
-              color: AppBrand.textDarkGrey,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoginFooter extends StatelessWidget {
-  const _LoginFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Text(
-          'Powered By',
-          style: TextStyle(
-            fontSize: 14,
-            color: AppBrand.textPrimary,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Image.asset(
-          AppBrand.orangePosLogo,
-          width: 88,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            return const Text(
-              'OrangePOS',
-              style: TextStyle(
-                fontSize: 14,
-                color: AppBrand.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            );
-          },
-        ),
-      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/product.dart';
 import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 import 'edit_product_screen.dart';
 import 'update_price_screen.dart';
 
@@ -43,9 +44,7 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || updatedProduct == null) {
-      return;
-    }
+    if (!mounted || updatedProduct == null) return;
 
     setState(() {
       product = updatedProduct;
@@ -64,13 +63,15 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || updatedProduct == null) {
-      return;
-    }
+    if (!mounted || updatedProduct == null) return;
 
     setState(() {
       product = updatedProduct;
     });
+  }
+
+  void closeScreen() {
+    Navigator.pop(context, product);
   }
 
   @override
@@ -78,44 +79,37 @@ class _ProductScreenState extends State<ProductScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) {
-          Navigator.pop(context, product);
-        }
+        if (!didPop) closeScreen();
       },
       child: Scaffold(
-        backgroundColor: AppBrand.loginBackground,
+        backgroundColor: AppBrand.white,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 18),
+            padding: AppChrome.pagePadding,
             child: Column(
               children: [
-                const _ProductHeader(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.only(top: 34),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _ProductTopSection(product: product),
-                        const SizedBox(height: 42),
-                        _PriceTaxSection(product: product),
-                        const SizedBox(height: 54),
-                        _ProductButton(
-                          icon: Icons.sell_outlined,
-                          label: 'Update Price',
-                          onPressed: isSaving ? null : openUpdatePrice,
-                        ),
-                        const SizedBox(height: 14),
-                        _ProductButton(
-                          icon: Icons.edit_outlined,
-                          label: 'Edit Name & Tax',
-                          onPressed: isSaving ? null : openEditProduct,
-                        ),
-                      ],
-                    ),
-                  ),
+                AppHeader.title(
+                  title: 'Product Details',
+                  onBackPressed: closeScreen,
                 ),
-                const _ProductFooter(),
+                const SizedBox(height: 13),
+                _ProductNameCard(productName: product.name),
+                const SizedBox(height: 30),
+                _ProductInfoSection(product: product),
+                const Spacer(),
+                _ProductButton(
+                  icon: Icons.sell_outlined,
+                  label: 'Update Price',
+                  onPressed: isSaving ? null : openUpdatePrice,
+                ),
+                const SizedBox(height: 14),
+                _ProductButton(
+                  icon: Icons.edit_outlined,
+                  label: 'Edit Name & Tax',
+                  onPressed: isSaving ? null : openEditProduct,
+                ),
+                const SizedBox(height: 36),
+                const AppFooter(),
               ],
             ),
           ),
@@ -125,94 +119,55 @@ class _ProductScreenState extends State<ProductScreen> {
   }
 }
 
-class _ProductHeader extends StatelessWidget {
-  const _ProductHeader();
+class _ProductNameCard extends StatelessWidget {
+  final String productName;
 
-  @override
-  Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        SizedBox(width: 48),
-        Expanded(
-          child: Text(
-            'Product Detail',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
-          ),
-        ),
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: AppBrand.white,
-          child: Icon(Icons.person_outline, color: AppBrand.textPrimary),
-        ),
-      ],
-    );
-  }
-}
-
-class _ProductTopSection extends StatelessWidget {
-  final Product product;
-
-  const _ProductTopSection({required this.product});
+  const _ProductNameCard({required this.productName});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 22, 16, 22),
+      height: 141,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppBrand.white,
+        color: const Color(0xFFFEF6EE),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppBrand.loginBackground, width: 4),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            product.name,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 46,
-              fontWeight: FontWeight.w800,
-              height: 1.05,
-              color: AppBrand.primary,
-            ),
-          ),
-          const SizedBox(height: 14),
-          const Text(
-            'Barcode',
-            style: TextStyle(
-              fontSize: 16,
-              color: AppBrand.textDarkGrey,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            product.barcode.isEmpty ? 'Not available' : product.barcode,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 24,
-              color: AppBrand.textDarkGrey,
-              fontWeight: FontWeight.w500,
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color.fromARGB(
+              255,
+              248,
+              170,
+              153,
+            ).withValues(alpha: 0.18),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
+      ),
+      child: Scrollbar(
+        thumbVisibility: false,
+        child: SingleChildScrollView(
+          child: Text(
+            productName,
+            style: const TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.w800,
+              height: 1.18,
+              color: Color.fromARGB(255, 246, 96, 46),
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-class _PriceTaxSection extends StatelessWidget {
+class _ProductInfoSection extends StatelessWidget {
   final Product product;
 
-  const _PriceTaxSection({required this.product});
+  const _ProductInfoSection({required this.product});
 
   String get priceWithoutCurrency {
     return product.formattedPrice.replaceFirst('CHF', '').trim();
@@ -222,40 +177,42 @@ class _PriceTaxSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _ProductMetricRow(
-          icon: Icons.local_offer,
-          title: 'Current Price',
-          value: 'CHF $priceWithoutCurrency',
-          valueFontSize: 32,
+        _InfoRow(
+          icon: const _BarcodeIcon(),
+          label: 'Barcode',
+          value: product.barcode.isEmpty ? 'Not available' : product.barcode,
+          valueFontSize: 22,
           valueWeight: FontWeight.w800,
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 16),
         const _OrangeDivider(),
-        const SizedBox(height: 20),
-        _ProductMetricRow(
-          icon: Icons.percent,
-          title: 'Sales Tax',
+        const SizedBox(height: 26),
+        _PriceRow(price: priceWithoutCurrency),
+        const SizedBox(height: 16),
+        const _OrangeDivider(),
+        const SizedBox(height: 26),
+        _InfoRow(
+          icon: const Icon(Icons.percent, size: 34, color: AppBrand.primary),
+          label: 'Tax',
           value: product.taxLabel,
-          valueFontSize: 30,
+          valueFontSize: 32,
           valueWeight: FontWeight.w400,
         ),
-        const SizedBox(height: 8),
-        const _OrangeDivider(),
       ],
     );
   }
 }
 
-class _ProductMetricRow extends StatelessWidget {
-  final IconData icon;
-  final String title;
+class _InfoRow extends StatelessWidget {
+  final Widget icon;
+  final String label;
   final String value;
   final double valueFontSize;
   final FontWeight valueWeight;
 
-  const _ProductMetricRow({
+  const _InfoRow({
     required this.icon,
-    required this.title,
+    required this.label,
     required this.value,
     required this.valueFontSize,
     required this.valueWeight,
@@ -264,32 +221,15 @@ class _ProductMetricRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(
-          width: 62,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 4),
-            child: Icon(
-              icon,
-              size: 34,
-              color: AppBrand.primary,
-            ),
-          ),
-        ),
+        SizedBox(width: 56, child: Center(child: icon)),
+        const SizedBox(width: 18),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: AppBrand.textDarkGrey,
-                ),
-              ),
-              const SizedBox(height: 8),
+              Text(label, style: _labelStyle),
+              const SizedBox(height: 6),
               Text(
                 value,
                 maxLines: 1,
@@ -298,6 +238,7 @@ class _ProductMetricRow extends StatelessWidget {
                   fontSize: valueFontSize,
                   fontWeight: valueWeight,
                   color: AppBrand.textDarkGrey,
+                  height: 1.08,
                 ),
               ),
             ],
@@ -308,19 +249,76 @@ class _ProductMetricRow extends StatelessWidget {
   }
 }
 
+class _PriceRow extends StatelessWidget {
+  final String price;
+
+  const _PriceRow({required this.price});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const SizedBox(
+          width: 56,
+          child: Center(
+            child: Icon(Icons.sell, size: 34, color: AppBrand.primary),
+          ),
+        ),
+        const SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Price', style: _labelStyle),
+              const SizedBox(height: 12),
+              const Text(
+                'CHF',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                price,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 34,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                  height: 1,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+const TextStyle _labelStyle = TextStyle(
+  fontSize: 17,
+  color: AppBrand.textDarkGrey,
+  fontWeight: FontWeight.w400,
+);
+
 class _OrangeDivider extends StatelessWidget {
   const _OrangeDivider();
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(left: 74),
       height: 3,
       width: double.infinity,
       color: AppBrand.primary,
     );
   }
 }
-
 
 class _ProductButton extends StatelessWidget {
   final IconData icon;
@@ -337,45 +335,77 @@ class _ProductButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 74,
-      child: FilledButton.icon(
+      height: 76,
+      child: FilledButton(
         onPressed: onPressed,
-        icon: Icon(icon, size: 22),
-        label: Text(label),
-      ),
-    );
-  }
-}
-
-class _ProductFooter extends StatelessWidget {
-  const _ProductFooter();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 10),
-      child: Text.rich(
-        TextSpan(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppBrand.primaryDark,
+          foregroundColor: AppBrand.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
           children: [
-            TextSpan(
-              text: 'Powered By ',
-              style: TextStyle(
-                color: AppBrand.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+            const Spacer(),
+            Icon(icon, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-            TextSpan(
-              text: 'OrangePos',
-              style: TextStyle(
-                color: AppBrand.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+            const Spacer(),
+            const Icon(Icons.chevron_right, size: 36),
           ],
         ),
       ),
     );
   }
+}
+
+class _BarcodeIcon extends StatelessWidget {
+  const _BarcodeIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 42,
+      height: 34,
+      child: CustomPaint(painter: _BarcodeIconPainter()),
+    );
+  }
+}
+
+class _BarcodeIconPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppBrand.primary
+      ..style = PaintingStyle.fill;
+
+    final bars = <double>[3, 2, 4, 2, 3, 5, 2, 4, 2, 3, 4, 2];
+    final gaps = <double>[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
+
+    var totalWidth = bars.fold<double>(0, (sum, width) => sum + width);
+    totalWidth += gaps.fold<double>(0, (sum, gap) => sum + gap);
+
+    var x = (size.width - totalWidth) / 2;
+    final top = size.height * 0.12;
+    final height = size.height * 0.76;
+
+    for (var i = 0; i < bars.length; i++) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, top, bars[i], height),
+          const Radius.circular(1),
+        ),
+        paint,
+      );
+
+      if (i < gaps.length) {
+        x += bars[i] + gaps[i];
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

@@ -9,6 +9,7 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -196,51 +197,53 @@ class _EditProductScreenState extends State<EditProductScreen> {
     final referenceFieldsDisabled = isSaving || isLoadingReferences;
 
     return Scaffold(
-      backgroundColor: AppBrand.loginBackground,
+      backgroundColor: AppBrand.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: EdgeInsets.fromLTRB(
-                26,
-                24,
-                26,
-                MediaQuery.viewInsetsOf(context).bottom + 24,
-              ),
+              padding: AppChrome.scrollPadding(context),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 48,
+                  minHeight: constraints.maxHeight - 43,
                 ),
                 child: IntrinsicHeight(
                   child: Column(
                     children: [
-                      _EditProductHeader(barcode: widget.product.barcode),
-                      const SizedBox(height: 42),
-
+                      AppHeader.title(
+                        title: widget.product.barcode.isEmpty
+                            ? 'Edit Product'
+                            : widget.product.barcode,
+                        onBackPressed: () => Navigator.pop(context),
+                      ),
+                      const SizedBox(height: 54),
                       const _FieldLabel(
                         label: 'Product Name',
                         secondary: 'Required',
                       ),
+                      const SizedBox(height: 10),
                       _OrangeTextField(
                         controller: nameController,
                         enabled: !isSaving,
                         hintText: 'Name',
                       ),
-
-                      const SizedBox(height: 18),
-
+                      const SizedBox(height: 20),
                       _FieldLabel(
                         label: 'Tax',
                         secondary: isLoadingReferences
                             ? 'Loading...'
                             : 'Default',
                       ),
+                      const SizedBox(height: 10),
                       DropdownButtonFormField<int?>(
                         initialValue: safeTaxId,
                         isExpanded: true,
                         decoration: _orangeInputDecoration(),
-                        icon: const Icon(Icons.keyboard_arrow_down),
+                        icon: const Icon(
+                          Icons.keyboard_arrow_down,
+                          color: Color(0xFF535353),
+                        ),
                         items: [
                           const DropdownMenuItem<int?>(
                             value: null,
@@ -261,7 +264,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
                                 });
                               },
                       ),
-
                       if (errorMessage != null) ...[
                         const SizedBox(height: 12),
                         Align(
@@ -275,29 +277,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                           ),
                         ),
                       ],
-
-                      const SizedBox(height: 150),
-
-                      SizedBox(
-                        width: double.infinity,
-                        height: 74,
-                        child: FilledButton.icon(
-                          onPressed: isSaving ? null : saveProduct,
-                          icon: isSaving
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : const Icon(Icons.add_circle, size: 24),
-                          label: Text(isSaving ? 'Saving...' : 'Save Changes'),
-                        ),
+                      const SizedBox(height: 240),
+                      _EditProductButton(
+                        isSaving: isSaving,
+                        onPressed: isSaving ? null : saveProduct,
                       ),
-
                       const Spacer(),
-                      const _EditProductFooter(),
+                      const AppFooter(),
                     ],
                   ),
                 ),
@@ -310,38 +296,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 }
 
-class _EditProductHeader extends StatelessWidget {
-  final String barcode;
-
-  const _EditProductHeader({required this.barcode});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 48),
-        Expanded(
-          child: Text(
-            barcode,
-            textAlign: TextAlign.center,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
-          ),
-        ),
-        const CircleAvatar(
-          radius: 22,
-          backgroundColor: AppBrand.primaryLight,
-          child: Icon(Icons.person_outline, color: AppBrand.primary, size: 22),
-        ),
-      ],
-    );
-  }
-}
-
 class _FieldLabel extends StatelessWidget {
   final String label;
   final String secondary;
@@ -350,25 +304,26 @@ class _FieldLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w800,
+            color: AppBrand.textDarkGrey,
           ),
-          const Spacer(),
-          Text(
-            secondary,
-            style: const TextStyle(fontSize: 14, color: AppBrand.textDarkGrey),
+        ),
+        const Spacer(),
+        Text(
+          secondary,
+          style: const TextStyle(
+            fontSize: 14,
+            color: AppBrand.textDarkGrey,
+            fontWeight: FontWeight.w400,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -399,48 +354,61 @@ class _OrangeTextField extends StatelessWidget {
 InputDecoration _orangeInputDecoration({String? hintText}) {
   return InputDecoration(
     hintText: hintText,
-    hintStyle: const TextStyle(fontSize: 16, color: AppBrand.textSecondary),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    hintStyle: const TextStyle(fontSize: 16, color: Color(0xFF535353)),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
     ),
     disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
-      borderSide: const BorderSide(color: AppBrand.primary, width: 2),
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
     ),
   );
 }
 
-class _EditProductFooter extends StatelessWidget {
-  const _EditProductFooter();
+class _EditProductButton extends StatelessWidget {
+  final bool isSaving;
+  final VoidCallback? onPressed;
+
+  const _EditProductButton({required this.isSaving, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return const Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Powered By ',
-            style: TextStyle(
-              color: AppBrand.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+    return SizedBox(
+      width: double.infinity,
+      height: 76,
+      child: FilledButton(
+        onPressed: onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: AppBrand.primaryDark,
+          foregroundColor: AppBrand.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+        child: Row(
+          children: [
+            const Spacer(),
+            isSaving
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppBrand.white,
+                    ),
+                  )
+                : const Icon(Icons.edit, size: 24),
+            const SizedBox(width: 12),
+            Text(
+              isSaving ? 'Saving...' : 'Edite Product',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-          ),
-          TextSpan(
-            text: 'OrangePos',
-            style: TextStyle(
-              color: AppBrand.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }

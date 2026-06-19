@@ -8,13 +8,14 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../services/token_storage.dart';
+import '../theme/app_brand.dart';
+import '../widgets/app_chrome.dart';
 
 import 'add_product_screen.dart';
-import 'barcode_not_found_screen.dart';
+
 import 'barcode_scanner_screen.dart';
 import 'login_screen.dart';
 import 'product_screen.dart';
-import '../theme/app_brand.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -145,7 +146,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
           ),
         );
 
-        await openBarcodeNotFound(scannedBarcode);
+        final createdProduct = await openAddProduct(scannedBarcode);
+
+        if (createdProduct != null) {
+          await openProduct(createdProduct);
+        }
+
         clearLastScan();
         return;
       }
@@ -257,19 +263,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
     );
   }
 
-  Future<void> openBarcodeNotFound(String barcode) async {
-    final shouldAddProduct = await Navigator.push<bool>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BarcodeNotFoundScreen(barcode: barcode),
-      ),
-    );
-
-    if (!mounted || shouldAddProduct != true) {
-      return;
-    }
-
-    final createdProduct = await Navigator.push<Product>(
+  Future<Product?> openAddProduct(String barcode) async {
+    return Navigator.push<Product>(
       context,
       MaterialPageRoute(
         builder: (context) => AddProductScreen(
@@ -279,50 +274,66 @@ class _ScannerScreenState extends State<ScannerScreen> {
         ),
       ),
     );
-
-    if (!mounted || createdProduct == null) {
-      return;
-    }
-
-    await openProduct(createdProduct);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppBrand.loginBackground,
+      backgroundColor: AppBrand.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(30, 24, 30, 24),
+          padding: AppChrome.pagePadding,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _ScannerHeader(onProfilePressed: logout),
-              const SizedBox(height: 210),
-              GestureDetector(
-                onTap: isLoading ? null : scanBarcode,
-                child: Container(
-                  width: 280,
-                  height: 177,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    border: Border.all(color: AppBrand.primary, width: 4),
-                  ),
-                  child: isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : const Icon(
-                          Icons.barcode_reader,
-                          size: 135,
-                          color: AppBrand.primary,
-                        ),
+              AppHeader.brand(onProfilePressed: logout),
+              const SizedBox(height: 34),
+              const Text(
+                'Scanner',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
                 ),
               ),
-              const SizedBox(height: 28),
-              const Text(
-                'Tap to Scan',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                  color: AppBrand.textPrimary,
+              const Spacer(flex: 2),
+              Center(
+                child: GestureDetector(
+                  onTap: isLoading ? null : scanBarcode,
+                  child: Container(
+                    width: 305,
+                    height: 334,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF6EE),
+                      borderRadius: BorderRadius.circular(49),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppBrand.primaryDark.withValues(alpha: 0.18),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
+                        ),
+                      ],
+                    ),
+                    child: isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _ScannerBarcodeGraphic(),
+                              SizedBox(height: 18),
+                              Text(
+                                'Tap to Scan\nProducts',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.42,
+                                  color: AppBrand.textPrimary,
+                                ),
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
               if (errorMessage != null) ...[
@@ -333,8 +344,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   onCopyDetails: copyErrorDetails,
                 ),
               ],
-              const Spacer(),
-              const _ScannerFooter(),
+              const Spacer(flex: 3),
+              const AppFooter(),
             ],
           ),
         ),
@@ -343,69 +354,56 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 }
 
-class _ScannerHeader extends StatelessWidget {
-  final VoidCallback onProfilePressed;
-
-  const _ScannerHeader({required this.onProfilePressed});
+class _ScannerBarcodeGraphic extends StatelessWidget {
+  const _ScannerBarcodeGraphic();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        const SizedBox(width: 48),
-        const Expanded(
-          child: Text(
-            'Scanner',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppBrand.textDarkGrey,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 48,
-          height: 48,
-          child: IconButton.filledTonal(
-            onPressed: onProfilePressed,
-            icon: const Icon(Icons.person_outline),
-            color: AppBrand.textPrimary,
-            style: IconButton.styleFrom(backgroundColor: AppBrand.white),
-          ),
-        ),
-      ],
+    return SizedBox(
+      width: 180,
+      height: 130,
+      child: CustomPaint(painter: _ScannerBarcodePainter()),
     );
   }
 }
 
-class _ScannerFooter extends StatelessWidget {
-  const _ScannerFooter();
+class _ScannerBarcodePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppBrand.primary
+      ..style = PaintingStyle.fill;
+
+    final barTop = size.height * 0.12;
+    final barHeight = size.height * 0.76;
+    final radius = Radius.circular(size.width * 0.025);
+
+    final bars = <double>[9, 5, 15, 5, 8, 20, 6, 15, 5, 14];
+    final gaps = <double>[8, 9, 8, 9, 9, 8, 8, 9, 8];
+
+    var totalWidth = bars.fold<double>(0, (sum, width) => sum + width);
+    totalWidth += gaps.fold<double>(0, (sum, gap) => sum + gap);
+
+    var x = (size.width - totalWidth) / 2;
+
+    for (var i = 0; i < bars.length; i++) {
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, barTop, bars[i], barHeight),
+          radius,
+        ),
+        paint,
+      );
+
+      if (i < gaps.length) {
+        x += bars[i] + gaps[i];
+      }
+    }
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return const Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: 'Powered By ',
-            style: TextStyle(
-              color: AppBrand.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          TextSpan(
-            text: 'OrangePos',
-            style: TextStyle(
-              color: AppBrand.primary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
 

@@ -7,10 +7,10 @@ class AppBrand {
   static const String orangePosLogo = 'assets/branding/orange_pos_logo.png';
   static const String loginScanIcon = 'assets/branding/login_scan_icon.png';
 
-static const Color primary = Color(0xFFF5733E);
-static const Color primaryDark = Color(0xFFE85F00);
-static const Color primaryLight = Color(0xFFFFF3E8);
-static const Color profileBackground = Color(0xFFFCE3D9);
+  static const Color primary = Color(0xFFF5733E);
+  static const Color primaryDark = Color(0xFFE85F00);
+  static const Color primaryLight = Color(0xFFFFF3E8);
+  static const Color profileBackground = Color(0xFFFCE3D9);
 
   static const Color loginBackground = Color(0xFFFEF5EC);
 
