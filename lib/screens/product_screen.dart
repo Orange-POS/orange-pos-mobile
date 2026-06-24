@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../demo/demo_mode.dart';
 import '../models/product.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -26,6 +27,13 @@ class _ProductScreenState extends State<ProductScreen> {
   late Product product;
   bool isSaving = false;
 
+  bool get isDemoMode {
+    return DemoMode.available &&
+        DemoMode.enabled &&
+        widget.authToken == DemoMode.authToken &&
+        widget.backendUrl == DemoMode.backendUrl;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -44,7 +52,9 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || updatedProduct == null) return;
+    if (!mounted || updatedProduct == null) {
+      return;
+    }
 
     setState(() {
       product = updatedProduct;
@@ -63,7 +73,9 @@ class _ProductScreenState extends State<ProductScreen> {
       ),
     );
 
-    if (!mounted || updatedProduct == null) return;
+    if (!mounted || updatedProduct == null) {
+      return;
+    }
 
     setState(() {
       product = updatedProduct;
@@ -79,7 +91,9 @@ class _ProductScreenState extends State<ProductScreen> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) closeScreen();
+        if (!didPop) {
+          closeScreen();
+        }
       },
       child: Scaffold(
         backgroundColor: AppBrand.white,
@@ -93,27 +107,63 @@ class _ProductScreenState extends State<ProductScreen> {
                   onBackPressed: closeScreen,
                 ),
                 const SizedBox(height: 13),
-                _ProductNameCard(productName: product.name),
-                const SizedBox(height: 30),
-                _ProductInfoSection(product: product),
-                const Spacer(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        if (isDemoMode) ...[
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: _DemoBadge(),
+                          ),
+                          const SizedBox(height: 12),
+                        ],
+                        _ProductNameCard(productName: product.name),
+                        const SizedBox(height: 24),
+                        _ProductInfoSection(product: product),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
                 _ProductButton(
                   icon: Icons.sell_outlined,
                   label: 'Update Price',
                   onPressed: isSaving ? null : openUpdatePrice,
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 _ProductButton(
                   icon: Icons.edit_outlined,
                   label: 'Edit Name & Tax',
                   onPressed: isSaving ? null : openEditProduct,
                 ),
-                const SizedBox(height: 36),
+                const SizedBox(height: 10),
                 const AppFooter(),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DemoBadge extends StatelessWidget {
+  const _DemoBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: AppBrand.primaryLight,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AppBrand.primary),
+      ),
+      child: const Text(
+        'Demo Product',
+        style: TextStyle(color: AppBrand.primary, fontWeight: FontWeight.w800),
       ),
     );
   }

@@ -9,6 +9,8 @@ import '../services/api_client.dart';
 import '../services/product_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
+import '../demo/demo_mode.dart';
+import '../demo/demo_product_store.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -39,6 +41,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
   bool isSaving = false;
   String? errorMessage;
 
+  bool get isDemoMode {
+    return DemoMode.available &&
+        DemoMode.enabled &&
+        widget.authToken == DemoMode.authToken &&
+        widget.backendUrl == DemoMode.backendUrl;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -54,10 +63,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Future<void> loadReferences() async {
     try {
-      final loadedReferences = await productService.loadProductReferences(
-        authToken: widget.authToken,
-        backendUrl: widget.backendUrl,
-      );
+      final loadedReferences = isDemoMode
+          ? DemoProductStore.instance.references
+          : await productService.loadProductReferences(
+              authToken: widget.authToken,
+              backendUrl: widget.backendUrl,
+            );
 
       if (!mounted) return;
 
@@ -116,14 +127,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
-      final createdProduct = await productService.createProduct(
-        authToken: widget.authToken,
-        backendUrl: widget.backendUrl,
-        barcode: widget.barcode,
-        name: name,
-        price: price,
-        taxIds: safeTaxId == null ? null : [safeTaxId],
-      );
+      final createdProduct = isDemoMode
+          ? DemoProductStore.instance.createProduct(
+              barcode: widget.barcode,
+              name: name,
+              price: price,
+              taxIds: safeTaxId == null ? null : [safeTaxId],
+            )
+          : await productService.createProduct(
+              authToken: widget.authToken,
+              backendUrl: widget.backendUrl,
+              barcode: widget.barcode,
+              name: name,
+              price: price,
+              taxIds: safeTaxId == null ? null : [safeTaxId],
+            );
 
       unawaited(
         analyticsService.trackEvent(

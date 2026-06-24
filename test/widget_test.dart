@@ -8,7 +8,9 @@ void main() {
     FlutterSecureStorage.setMockInitialValues({});
 
     await tester.pumpWidget(const InventoryTrackerApp());
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text('Login'), findsOneWidget);
     expect(find.text('Tap to Scan'), findsOneWidget);

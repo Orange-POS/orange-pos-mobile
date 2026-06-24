@@ -16,6 +16,8 @@ import 'add_product_screen.dart';
 import 'barcode_scanner_screen.dart';
 import 'login_screen.dart';
 import 'product_screen.dart';
+import '../demo/demo_mode.dart';
+import '../demo/demo_product_store.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -72,6 +74,61 @@ class _ScannerScreenState extends State<ScannerScreen> {
     lastScanTime = null;
   }
 
+  bool get isDemoMode {
+    return DemoMode.available &&
+        DemoMode.enabled &&
+        widget.authToken == DemoMode.authToken &&
+        widget.backendUrl == DemoMode.backendUrl;
+  }
+
+  Future<String?> pickDemoBarcode() async {
+    return showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: AppBrand.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Demo Barcode',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: AppBrand.textDarkGrey,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Choose a sample barcode for Apple review testing.',
+                  style: TextStyle(fontSize: 14, color: AppBrand.textSecondary),
+                ),
+                const SizedBox(height: 18),
+                _DemoBarcodeOption(
+                  title: 'Existing product',
+                  subtitle: 'Barcode 100001',
+                  onTap: () => Navigator.pop(context, DemoMode.existingBarcode),
+                ),
+                const SizedBox(height: 10),
+                _DemoBarcodeOption(
+                  title: 'Unknown product',
+                  subtitle: 'Barcode 999999',
+                  onTap: () => Navigator.pop(context, DemoMode.unknownBarcode),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> scanBarcode() async {
     if (isScannerOpen || isLookingUpProduct || isLoading) {
       return;
@@ -79,11 +136,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     isScannerOpen = true;
 
-    final barcode = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
-    );
-
+    final barcode = isDemoMode
+        ? await pickDemoBarcode()
+        : await Navigator.push<String>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const BarcodeScannerScreen(),
+            ),
+          );
     isScannerOpen = false;
 
     final scannedBarcode = barcode?.trim();
@@ -121,11 +181,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
 
     try {
-      final product = await productService.findProductByBarcode(
-        authToken: widget.authToken,
-        backendUrl: widget.backendUrl,
-        barcode: scannedBarcode,
-      );
+      final product = isDemoMode
+          ? DemoProductStore.instance.findByBarcode(scannedBarcode)
+          : await productService.findProductByBarcode(
+              authToken: widget.authToken,
+              backendUrl: widget.backendUrl,
+              barcode: scannedBarcode,
+            );
 
       if (!mounted) {
         return;
@@ -249,6 +311,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
         screen: 'scanner',
       ),
     );
+    if (isDemoMode) {
+      DemoMode.disable();
+    }
 
     await tokenStorage.clearSession();
 
@@ -288,6 +353,27 @@ class _ScannerScreenState extends State<ScannerScreen> {
             children: [
               AppHeader.brand(onProfilePressed: logout),
               const SizedBox(height: 34),
+              if (isDemoMode) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppBrand.primaryLight,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: AppBrand.primary),
+                  ),
+                  child: const Text(
+                    'Demo Mode',
+                    style: TextStyle(
+                      color: AppBrand.primary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
               const Text(
                 'Scanner',
                 style: TextStyle(
@@ -346,6 +432,67 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ],
               const Spacer(flex: 3),
               const AppFooter(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DemoBarcodeOption extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  const _DemoBarcodeOption({
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppBrand.primaryLight,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+          child: Row(
+            children: [
+              const Icon(
+                Icons.qr_code_scanner,
+                color: AppBrand.primary,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppBrand.textDarkGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppBrand.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: AppBrand.primary),
             ],
           ),
         ),

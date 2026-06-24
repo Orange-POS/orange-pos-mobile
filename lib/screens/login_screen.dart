@@ -11,6 +11,8 @@ import '../widgets/app_chrome.dart';
 
 import 'qr_login_scanner_screen.dart';
 import 'scanner_screen.dart';
+import '../demo/demo_mode.dart';
+import 'settings_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +31,35 @@ class _LoginScreenState extends State<LoginScreen> {
   String? authToken;
   String? errorMessage;
 
+  Future<void> openSettings() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void enterDemoLogin() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ScannerScreen(
+          authToken: DemoMode.authToken,
+          backendUrl: DemoMode.backendUrl,
+        ),
+      ),
+    );
+  }
+
   Future<void> openScanner() async {
+    if (DemoMode.available && DemoMode.enabled) {
+      enterDemoLogin();
+      return;
+    }
+
     final qrData = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const QrLoginScannerScreen()),
@@ -138,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppHeader.brand(),
+              AppHeader.brand(onProfilePressed: openSettings),
               const SizedBox(height: 31),
               const Text(
                 'Login',
@@ -190,6 +220,21 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
+              if (DemoMode.available && DemoMode.enabled) ...[
+                const SizedBox(height: 10),
+                const Center(
+                  child: Text(
+                    'Demo Mode enabled. Tap to continue without Odoo.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppBrand.primary,
+                    ),
+                  ),
+                ),
+              ],
+
               if (errorMessage != null) ...[
                 const SizedBox(height: 18),
                 Container(
