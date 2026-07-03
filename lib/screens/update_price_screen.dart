@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
-import '../services/product_service.dart';
+
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-import '../demo/demo_mode.dart';
-import '../demo/demo_product_store.dart';
+
+import '../features/products/data/product_repository_factory.dart';
+import '../features/products/domain/product_repository.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -28,7 +29,8 @@ class UpdatePriceScreen extends StatefulWidget {
 }
 
 class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
-  final ProductService productService = ProductService();
+  final ProductRepositoryFactory productRepositoryFactory =
+      const ProductRepositoryFactory();
   final AnalyticsService analyticsService = AnalyticsService();
 
   late final TextEditingController priceController;
@@ -36,11 +38,11 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   bool isSaving = false;
   String? errorMessage;
 
-  bool get isDemoMode {
-    return DemoMode.available &&
-        DemoMode.enabled &&
-        widget.authToken == DemoMode.authToken &&
-        widget.backendUrl == DemoMode.backendUrl;
+  ProductRepository get productRepository {
+    return productRepositoryFactory.create(
+      authToken: widget.authToken,
+      backendUrl: widget.backendUrl,
+    );
   }
 
   @override
@@ -75,17 +77,10 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
     });
 
     try {
-      final updatedProduct = isDemoMode
-          ? DemoProductStore.instance.updatePrice(
-              product: widget.product,
-              price: newPrice,
-            )
-          : await productService.updateProductPrice(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-              product: widget.product,
-              price: newPrice.toString(),
-            );
+      final updatedProduct = await productRepository.updateProductPrice(
+        product: widget.product,
+        price: newPrice,
+      );
 
       unawaited(
         analyticsService.trackEvent(

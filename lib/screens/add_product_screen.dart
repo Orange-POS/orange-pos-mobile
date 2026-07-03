@@ -2,15 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../features/products/data/product_repository_factory.dart';
+import '../features/products/domain/product_repository.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
-import '../services/product_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-import '../demo/demo_mode.dart';
-import '../demo/demo_product_store.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -32,7 +31,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final AnalyticsService analyticsService = AnalyticsService();
-  final ProductService productService = ProductService();
+  final ProductRepositoryFactory productRepositoryFactory =
+      const ProductRepositoryFactory();
 
   ProductReferences references = const ProductReferences();
 
@@ -41,11 +41,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
   bool isSaving = false;
   String? errorMessage;
 
-  bool get isDemoMode {
-    return DemoMode.available &&
-        DemoMode.enabled &&
-        widget.authToken == DemoMode.authToken &&
-        widget.backendUrl == DemoMode.backendUrl;
+  ProductRepository get productRepository {
+    return productRepositoryFactory.create(
+      authToken: widget.authToken,
+      backendUrl: widget.backendUrl,
+    );
   }
 
   @override
@@ -63,12 +63,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   Future<void> loadReferences() async {
     try {
-      final loadedReferences = isDemoMode
-          ? DemoProductStore.instance.references
-          : await productService.loadProductReferences(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-            );
+      final loadedReferences = await productRepository.loadProductReferences();
 
       if (!mounted) return;
 
@@ -127,21 +122,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
     });
 
     try {
-      final createdProduct = isDemoMode
-          ? DemoProductStore.instance.createProduct(
-              barcode: widget.barcode,
-              name: name,
-              price: price,
-              taxIds: safeTaxId == null ? null : [safeTaxId],
-            )
-          : await productService.createProduct(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-              barcode: widget.barcode,
-              name: name,
-              price: price,
-              taxIds: safeTaxId == null ? null : [safeTaxId],
-            );
+      final createdProduct = await productRepository.createProduct(
+        barcode: widget.barcode,
+        name: name,
+        price: price,
+        taxIds: safeTaxId == null ? null : [safeTaxId],
+      );
 
       unawaited(
         analyticsService.trackEvent(

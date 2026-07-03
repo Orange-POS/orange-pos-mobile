@@ -3,21 +3,18 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../demo/demo_mode.dart';
+import '../features/products/data/product_repository_factory.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
-import '../services/product_service.dart';
 import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-
 import 'add_product_screen.dart';
-
 import 'barcode_scanner_screen.dart';
 import 'login_screen.dart';
 import 'product_screen.dart';
-import '../demo/demo_mode.dart';
-import '../demo/demo_product_store.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -34,7 +31,8 @@ class ScannerScreen extends StatefulWidget {
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  final ProductService productService = ProductService();
+  final ProductRepositoryFactory productRepositoryFactory =
+      const ProductRepositoryFactory();
   final TokenStorage tokenStorage = TokenStorage.instance;
   final AnalyticsService analyticsService = AnalyticsService();
 
@@ -47,6 +45,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   String? lastScannedBarcode;
   DateTime? lastScanTime;
+
+  bool get isDemoMode {
+    return DemoMode.available &&
+        DemoMode.enabled &&
+        widget.authToken == DemoMode.authToken &&
+        widget.backendUrl == DemoMode.backendUrl;
+  }
 
   bool shouldIgnoreDuplicateScan(String barcode) {
     final previousBarcode = lastScannedBarcode;
@@ -72,13 +77,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
   void clearLastScan() {
     lastScannedBarcode = null;
     lastScanTime = null;
-  }
-
-  bool get isDemoMode {
-    return DemoMode.available &&
-        DemoMode.enabled &&
-        widget.authToken == DemoMode.authToken &&
-        widget.backendUrl == DemoMode.backendUrl;
   }
 
   Future<String?> pickDemoBarcode() async {
@@ -144,6 +142,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               builder: (context) => const BarcodeScannerScreen(),
             ),
           );
+
     isScannerOpen = false;
 
     final scannedBarcode = barcode?.trim();
@@ -181,13 +180,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
 
     try {
-      final product = isDemoMode
-          ? DemoProductStore.instance.findByBarcode(scannedBarcode)
-          : await productService.findProductByBarcode(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-              barcode: scannedBarcode,
-            );
+      final productRepository = productRepositoryFactory.create(
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+      );
+
+      final product = await productRepository.findProductByBarcode(
+        scannedBarcode,
+      );
 
       if (!mounted) {
         return;
@@ -311,6 +311,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         screen: 'scanner',
       ),
     );
+
     if (isDemoMode) {
       DemoMode.disable();
     }
@@ -353,6 +354,14 @@ class _ScannerScreenState extends State<ScannerScreen> {
             children: [
               AppHeader.brand(onProfilePressed: logout),
               const SizedBox(height: 34),
+              const Text(
+                'Scanner',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w800,
+                  color: AppBrand.textDarkGrey,
+                ),
+              ),
               if (isDemoMode) ...[
                 const SizedBox(height: 10),
                 Container(
@@ -374,14 +383,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
                   ),
                 ),
               ],
-              const Text(
-                'Scanner',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  color: AppBrand.textDarkGrey,
-                ),
-              ),
               const Spacer(flex: 2),
               Center(
                 child: GestureDetector(

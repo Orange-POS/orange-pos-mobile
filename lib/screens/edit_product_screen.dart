@@ -7,11 +7,12 @@ import '../models/product_references.dart';
 import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
-import '../services/product_service.dart';
+
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-import '../demo/demo_mode.dart';
-import '../demo/demo_product_store.dart';
+
+import '../features/products/data/product_repository_factory.dart';
+import '../features/products/domain/product_repository.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -32,7 +33,8 @@ class EditProductScreen extends StatefulWidget {
 }
 
 class _EditProductScreenState extends State<EditProductScreen> {
-  final ProductService productService = ProductService();
+  final ProductRepositoryFactory productRepositoryFactory =
+      const ProductRepositoryFactory();
   final AnalyticsService analyticsService = AnalyticsService();
 
   late final TextEditingController nameController;
@@ -43,11 +45,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
   bool isSaving = false;
   String? errorMessage;
 
-  bool get isDemoMode {
-    return DemoMode.available &&
-        DemoMode.enabled &&
-        widget.authToken == DemoMode.authToken &&
-        widget.backendUrl == DemoMode.backendUrl;
+  ProductRepository get productRepository {
+    return productRepositoryFactory.create(
+      authToken: widget.authToken,
+      backendUrl: widget.backendUrl,
+    );
   }
 
   @override
@@ -81,12 +83,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     try {
-      final loadedReferences = isDemoMode
-          ? DemoProductStore.instance.references
-          : await productService.loadProductReferences(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-            );
+      final loadedReferences = await productRepository.loadProductReferences();
 
       if (!mounted) return;
 
@@ -133,19 +130,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
     try {
       final safeTaxId = _safeSelectedTaxId();
 
-      final updatedProduct = isDemoMode
-          ? DemoProductStore.instance.updateProduct(
-              product: widget.product,
-              name: name,
-              taxIds: safeTaxId == null ? null : [safeTaxId],
-            )
-          : await productService.updateProduct(
-              authToken: widget.authToken,
-              backendUrl: widget.backendUrl,
-              product: widget.product,
-              name: name,
-              taxIds: safeTaxId == null ? null : [safeTaxId],
-            );
+      final updatedProduct = await productRepository.updateProduct(
+        product: widget.product,
+        name: name,
+        taxIds: safeTaxId == null ? null : [safeTaxId],
+      );
 
       await analyticsService.trackEvent(
         authToken: widget.authToken,
