@@ -16,6 +16,7 @@ import 'settings_screen.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
+import '../core/analytics/analytics_events.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -110,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
         analyticsService.trackEvent(
           authToken: token,
           backendUrl: loginData.backendUrl,
-          eventName: 'login_success',
+          eventName: AnalyticsEvents.loginSuccess,
           screen: 'login',
           metadata: {
             'pos_session_id': loginData.posSessionId,
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
           analyticsService.trackError(
             authToken: '',
             backendUrl: lastQrData!.backendUrl,
-            errorType: appError.type.name,
+            errorType: AnalyticsErrorTypes.fromAppErrorType(appError.type),
             screen: 'login',
             message: appError.userMessage,
             details: appError.diagnosticDetails,

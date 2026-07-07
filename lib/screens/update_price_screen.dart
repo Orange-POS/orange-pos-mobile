@@ -11,6 +11,7 @@ import '../services/analytics_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import '../core/errors/app_error.dart';
+import '../core/analytics/analytics_events.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -92,7 +93,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         analyticsService.trackEvent(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          eventName: 'price_updated',
+          eventName: AnalyticsEvents.priceUpdated,
           screen: 'update_price',
           metadata: {
             'product_id': updatedProduct.id,
@@ -116,7 +117,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: appError.type.name,
+          errorType: AnalyticsErrorTypes.fromAppErrorType(appError.type),
           screen: 'update_price',
           message: appError.userMessage,
           details: appError.diagnosticDetails,

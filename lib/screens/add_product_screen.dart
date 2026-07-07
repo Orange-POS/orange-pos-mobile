@@ -7,7 +7,7 @@ import '../features/products/domain/product_repository.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
-
+import '../core/analytics/analytics_events.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import '../core/di/app_dependencies.dart';
@@ -139,7 +139,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         analyticsService.trackEvent(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          eventName: 'product_added',
+          eventName: AnalyticsEvents.productAdded,
           screen: 'add_product',
           metadata: {
             'barcode': widget.barcode,
@@ -161,7 +161,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: appError.type.name,
+          errorType: AnalyticsErrorTypes.fromAppErrorType(appError.type),
           screen: 'add_product',
           message: appError.userMessage,
           details: appError.diagnosticDetails,

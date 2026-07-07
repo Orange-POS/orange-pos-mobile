@@ -17,6 +17,7 @@ import 'barcode_scanner_screen.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
+import '../core/analytics/analytics_events.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -173,7 +174,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       analyticsService.trackEvent(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
-        eventName: 'product_scanned',
+        eventName: AnalyticsEvents.productScanned,
         screen: 'scanner',
         metadata: {'barcode': scannedBarcode},
       ),
@@ -208,7 +209,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           analyticsService.trackEvent(
             authToken: widget.authToken,
             backendUrl: widget.backendUrl,
-            eventName: 'product_not_found',
+            eventName: AnalyticsEvents.productNotFound,
             screen: 'scanner',
             metadata: {'barcode': scannedBarcode},
           ),
@@ -228,7 +229,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         analyticsService.trackEvent(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          eventName: 'product_found',
+          eventName: AnalyticsEvents.productFound,
           screen: 'scanner',
           metadata: {'barcode': scannedBarcode, 'product_id': product.id},
         ),
@@ -252,7 +253,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: appError.type.name,
+          errorType: AnalyticsErrorTypes.fromAppErrorType(appError.type),
           screen: 'scanner',
           message: appError.userMessage,
           details: appError.diagnosticDetails,
@@ -306,7 +307,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       analyticsService.trackEvent(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
-        eventName: 'logout',
+        eventName: AnalyticsEvents.logout,
         screen: 'scanner',
       ),
     );

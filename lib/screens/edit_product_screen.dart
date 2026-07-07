@@ -15,6 +15,8 @@ import '../features/products/data/product_repository_factory.dart';
 import '../features/products/domain/product_repository.dart';
 import '../core/errors/app_error.dart';
 
+import '../core/analytics/analytics_events.dart';
+
 class EditProductScreen extends StatefulWidget {
   final Product product;
   final String authToken;
@@ -145,7 +147,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       await analyticsService.trackEvent(
         authToken: widget.authToken,
         backendUrl: widget.backendUrl,
-        eventName: 'product_updated',
+        eventName: AnalyticsEvents.productUpdated,
         screen: 'edit_product',
         metadata: {
           'product_id': widget.product.id,
@@ -165,7 +167,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: appError.type.name,
+          errorType: AnalyticsErrorTypes.fromAppErrorType(appError.type),
           screen: 'edit_product',
           message: appError.userMessage,
           details: appError.diagnosticDetails,

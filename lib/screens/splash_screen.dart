@@ -11,6 +11,7 @@ import '../theme/app_brand.dart';
 
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
+import '../core/analytics/analytics_events.dart';
 
 class SplashScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
       analyticsService.trackEvent(
         authToken: token,
         backendUrl: backendUrl,
-        eventName: 'app_opened',
+        eventName: AnalyticsEvents.appOpened,
         screen: 'splash',
       ),
     );
