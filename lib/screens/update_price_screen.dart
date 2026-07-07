@@ -2,26 +2,27 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../core/di/app_dependencies.dart';
+import '../features/products/data/product_repository_factory.dart';
+import '../features/products/domain/product_repository.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
 import '../services/api_client.dart';
-
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-
-import '../features/products/data/product_repository_factory.dart';
-import '../features/products/domain/product_repository.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
   final String authToken;
   final String backendUrl;
+  final AppDependencies dependencies;
 
   const UpdatePriceScreen({
     super.key,
     required this.product,
     required this.authToken,
     required this.backendUrl,
+    required this.dependencies,
   });
 
   @override
@@ -29,9 +30,13 @@ class UpdatePriceScreen extends StatefulWidget {
 }
 
 class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
-  final ProductRepositoryFactory productRepositoryFactory =
-      const ProductRepositoryFactory();
-  final AnalyticsService analyticsService = AnalyticsService();
+  ProductRepositoryFactory get productRepositoryFactory {
+    return widget.dependencies.productRepositoryFactory;
+  }
+
+  AnalyticsService get analyticsService {
+    return widget.dependencies.analyticsService;
+  }
 
   late final TextEditingController priceController;
 
@@ -96,11 +101,15 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         ),
       );
 
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       Navigator.pop(context, updatedProduct);
     } catch (error) {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       final updateError = error is ApiClientException
           ? error.userMessage

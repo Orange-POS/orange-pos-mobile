@@ -13,9 +13,12 @@ import 'qr_login_scanner_screen.dart';
 import 'scanner_screen.dart';
 import '../demo/demo_mode.dart';
 import 'settings_screen.dart';
+import '../core/di/app_dependencies.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final AppDependencies dependencies;
+
+  const LoginScreen({super.key, required this.dependencies});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -23,9 +26,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   QrLoginData? lastQrData;
-  final AuthService authService = AuthService();
-  final TokenStorage tokenStorage = TokenStorage.instance;
-  final AnalyticsService analyticsService = AnalyticsService();
+  AuthService get authService => widget.dependencies.authService;
+  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
+  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   bool isLoggingIn = false;
   String? authToken;
@@ -46,9 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ScannerScreen(
+        builder: (context) => ScannerScreen(
           authToken: DemoMode.authToken,
           backendUrl: DemoMode.backendUrl,
+          dependencies: widget.dependencies,
         ),
       ),
     );
@@ -127,8 +131,11 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              ScannerScreen(authToken: token, backendUrl: loginData.backendUrl),
+          builder: (context) => ScannerScreen(
+            authToken: token,
+            backendUrl: loginData.backendUrl,
+            dependencies: widget.dependencies,
+          ),
         ),
       );
     } catch (error) {

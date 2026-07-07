@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import '../core/di/app_dependencies.dart';
 
 import '../models/product.dart';
 import '../models/product_references.dart';
@@ -19,12 +20,14 @@ class EditProductScreen extends StatefulWidget {
   final String authToken;
   final String backendUrl;
   final ProductReferences? initialReferences;
+  final AppDependencies dependencies;
 
   const EditProductScreen({
     super.key,
     required this.product,
     required this.authToken,
     required this.backendUrl,
+    required this.dependencies,
     this.initialReferences,
   });
 
@@ -33,9 +36,11 @@ class EditProductScreen extends StatefulWidget {
 }
 
 class _EditProductScreenState extends State<EditProductScreen> {
-  final ProductRepositoryFactory productRepositoryFactory =
-      const ProductRepositoryFactory();
-  final AnalyticsService analyticsService = AnalyticsService();
+  ProductRepositoryFactory get productRepositoryFactory {
+    return widget.dependencies.productRepositoryFactory;
+  }
+
+  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   late final TextEditingController nameController;
 

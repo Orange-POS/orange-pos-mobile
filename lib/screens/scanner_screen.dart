@@ -15,15 +15,18 @@ import 'add_product_screen.dart';
 import 'barcode_scanner_screen.dart';
 import 'login_screen.dart';
 import 'product_screen.dart';
+import '../core/di/app_dependencies.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
   final String backendUrl;
+  final AppDependencies dependencies;
 
   const ScannerScreen({
     super.key,
     required this.authToken,
     required this.backendUrl,
+    required this.dependencies,
   });
 
   @override
@@ -31,10 +34,12 @@ class ScannerScreen extends StatefulWidget {
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  final ProductRepositoryFactory productRepositoryFactory =
-      const ProductRepositoryFactory();
-  final TokenStorage tokenStorage = TokenStorage.instance;
-  final AnalyticsService analyticsService = AnalyticsService();
+  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
+  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+
+  ProductRepositoryFactory get productRepositoryFactory {
+    return widget.dependencies.productRepositoryFactory;
+  }
 
   bool isLoading = false;
   bool isScannerOpen = false;
@@ -297,6 +302,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           product: product,
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
+          dependencies: widget.dependencies,
         ),
       ),
     );
@@ -324,7 +330,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(dependencies: AppDependencies()),
+      ),
       (route) => false,
     );
   }
@@ -337,6 +345,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           barcode: barcode,
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
+          dependencies: widget.dependencies,
         ),
       ),
     );

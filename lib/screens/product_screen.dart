@@ -6,17 +6,19 @@ import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import 'edit_product_screen.dart';
 import 'update_price_screen.dart';
+import '../core/di/app_dependencies.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
   final String authToken;
   final String backendUrl;
-
+  final AppDependencies dependencies;
   const ProductScreen({
     super.key,
     required this.product,
     required this.authToken,
     required this.backendUrl,
+    required this.dependencies,
   });
 
   @override
@@ -48,6 +50,7 @@ class _ProductScreenState extends State<ProductScreen> {
           product: product,
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
+          dependencies: widget.dependencies,
         ),
       ),
     );
@@ -69,6 +72,7 @@ class _ProductScreenState extends State<ProductScreen> {
           product: product,
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
+          dependencies: widget.dependencies,
         ),
       ),
     );

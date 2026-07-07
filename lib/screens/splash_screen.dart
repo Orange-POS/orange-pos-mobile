@@ -10,18 +10,21 @@ import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
 import 'login_screen.dart';
 import 'scanner_screen.dart';
+import '../core/di/app_dependencies.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  final AppDependencies dependencies;
+
+  const SplashScreen({super.key, required this.dependencies});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final TokenStorage tokenStorage = TokenStorage.instance;
-  final SessionService sessionService = SessionService();
-  final AnalyticsService analyticsService = AnalyticsService();
+  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
+  SessionService get sessionService => widget.dependencies.sessionService;
+  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   @override
   void initState() {
@@ -74,8 +77,11 @@ class _SplashScreenState extends State<SplashScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            ScannerScreen(authToken: token, backendUrl: backendUrl),
+        builder: (context) => ScannerScreen(
+          authToken: token,
+          backendUrl: backendUrl,
+          dependencies: widget.dependencies,
+        ),
       ),
     );
   }
@@ -83,7 +89,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void openLogin() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      MaterialPageRoute(
+        builder: (context) => LoginScreen(dependencies: widget.dependencies),
+      ),
     );
   }
 

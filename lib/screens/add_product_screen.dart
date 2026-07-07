@@ -10,17 +10,20 @@ import '../services/analytics_service.dart';
 import '../services/api_client.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
+import '../core/di/app_dependencies.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
   final String authToken;
   final String backendUrl;
+  final AppDependencies dependencies;
 
   const AddProductScreen({
     super.key,
     required this.barcode,
     required this.authToken,
     required this.backendUrl,
+    required this.dependencies,
   });
 
   @override
@@ -30,9 +33,11 @@ class AddProductScreen extends StatefulWidget {
 class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
-  final AnalyticsService analyticsService = AnalyticsService();
-  final ProductRepositoryFactory productRepositoryFactory =
-      const ProductRepositoryFactory();
+  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+
+  ProductRepositoryFactory get productRepositoryFactory {
+    return widget.dependencies.productRepositoryFactory;
+  }
 
   ProductReferences references = const ProductReferences();
 
