@@ -7,9 +7,10 @@ import '../features/products/data/product_repository_factory.dart';
 import '../features/products/domain/product_repository.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
-import '../services/api_client.dart';
+
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
+import '../core/errors/app_error.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -107,31 +108,27 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
 
       Navigator.pop(context, updatedProduct);
     } catch (error) {
-      if (!mounted) {
-        return;
-      }
+      if (!mounted) return;
 
-      final updateError = error is ApiClientException
-          ? error.userMessage
-          : error.toString().replaceFirst('Exception: ', '');
+      final appError = AppError.fromException(error);
 
       unawaited(
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: 'api_error',
+          errorType: appError.type.name,
           screen: 'update_price',
-          message: updateError,
-          details: error.toString(),
+          message: appError.userMessage,
+          details: appError.diagnosticDetails,
         ),
       );
 
       setState(() {
         isSaving = false;
-        errorMessage = updateError;
+        errorMessage = appError.userMessage;
       });
 
-      debugPrint('Price update failed: $error');
+      debugPrint('Price update failed: ${appError.diagnosticDetails}');
     }
   }
 

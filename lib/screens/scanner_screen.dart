@@ -7,7 +7,7 @@ import '../demo/demo_mode.dart';
 import '../features/products/data/product_repository_factory.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
-import '../services/api_client.dart';
+
 import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -16,6 +16,7 @@ import 'barcode_scanner_screen.dart';
 
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
+import '../core/errors/app_error.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -240,31 +241,25 @@ class _ScannerScreenState extends State<ScannerScreen> {
         return;
       }
 
-      final lookupError = error is ApiClientException
-          ? error.userMessage
-          : error.toString().replaceFirst('Exception: ', '');
-
-      final details = error is ApiClientException
-          ? error.diagnosticDetails
-          : error.toString();
+      final appError = AppError.fromException(error);
 
       setState(() {
-        errorMessage = lookupError;
-        errorDetails = details;
+        errorMessage = appError.userMessage;
+        errorDetails = appError.diagnosticDetails;
       });
 
       unawaited(
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: 'api_error',
+          errorType: appError.type.name,
           screen: 'scanner',
-          message: lookupError,
-          details: details,
+          message: appError.userMessage,
+          details: appError.diagnosticDetails,
         ),
       );
 
-      debugPrint('Product lookup failed: $error');
+      debugPrint('Product lookup failed: ${appError.diagnosticDetails}');
     } finally {
       isLookingUpProduct = false;
 

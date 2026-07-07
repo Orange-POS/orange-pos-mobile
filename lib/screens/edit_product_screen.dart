@@ -7,13 +7,13 @@ import '../models/product.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
-import '../services/api_client.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
 import '../features/products/data/product_repository_factory.dart';
 import '../features/products/domain/product_repository.dart';
+import '../core/errors/app_error.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -96,18 +96,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
         references = loadedReferences;
         selectedTaxId = _safeSelectedTaxId();
       });
-    } on ApiClientException catch (error) {
+    } catch (error) {
       if (!mounted) return;
 
-      setState(() {
-        errorMessage = error.userMessage;
-      });
-    } catch (_) {
-      if (!mounted) return;
+      final appError = AppError.fromException(error);
 
       setState(() {
-        errorMessage = 'Could not load product references.';
+        isLoadingReferences = false;
+        errorMessage = appError.userMessage;
       });
+
+      debugPrint(
+        'Product references failed to load: ${appError.diagnosticDetails}',
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -155,18 +156,28 @@ class _EditProductScreenState extends State<EditProductScreen> {
       if (!mounted) return;
 
       Navigator.of(context).pop(updatedProduct);
-    } on ApiClientException catch (error) {
+    } catch (error) {
       if (!mounted) return;
 
-      setState(() {
-        errorMessage = error.userMessage;
-      });
-    } catch (_) {
-      if (!mounted) return;
+      final appError = AppError.fromException(error);
+
+      unawaited(
+        analyticsService.trackError(
+          authToken: widget.authToken,
+          backendUrl: widget.backendUrl,
+          errorType: appError.type.name,
+          screen: 'edit_product',
+          message: appError.userMessage,
+          details: appError.diagnosticDetails,
+        ),
+      );
 
       setState(() {
-        errorMessage = 'Could not update product.';
+        isSaving = false;
+        errorMessage = appError.userMessage;
       });
+
+      debugPrint('Product update failed: ${appError.diagnosticDetails}');
     } finally {
       if (mounted) {
         setState(() {

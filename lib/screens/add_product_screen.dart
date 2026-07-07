@@ -7,10 +7,11 @@ import '../features/products/domain/product_repository.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
 import '../services/analytics_service.dart';
-import '../services/api_client.dart';
+
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import '../core/di/app_dependencies.dart';
+import '../core/errors/app_error.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -154,27 +155,25 @@ class _AddProductScreenState extends State<AddProductScreen> {
     } catch (error) {
       if (!mounted) return;
 
-      final createError = error is ApiClientException
-          ? error.userMessage
-          : error.toString().replaceFirst('Exception: ', '');
+      final appError = AppError.fromException(error);
 
       unawaited(
         analyticsService.trackError(
           authToken: widget.authToken,
           backendUrl: widget.backendUrl,
-          errorType: 'api_error',
+          errorType: appError.type.name,
           screen: 'add_product',
-          message: createError,
-          details: error.toString(),
+          message: appError.userMessage,
+          details: appError.diagnosticDetails,
         ),
       );
 
       setState(() {
         isSaving = false;
-        errorMessage = createError;
+        errorMessage = appError.userMessage;
       });
 
-      debugPrint('Product creation failed: $error');
+      debugPrint('Product creation failed: ${appError.diagnosticDetails}');
     }
   }
 

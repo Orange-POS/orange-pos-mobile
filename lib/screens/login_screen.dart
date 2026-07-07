@@ -15,6 +15,7 @@ import '../demo/demo_mode.dart';
 import 'settings_screen.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
+import '../core/errors/app_error.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -140,22 +141,24 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
+      final appError = AppError.fromException(error);
+
       setState(() {
         isLoggingIn = false;
-        errorMessage = 'Login failed. Please try again.';
+        errorMessage = appError.userMessage;
       });
 
-      debugPrint('Login failed: $error');
+      debugPrint('Login failed: ${appError.diagnosticDetails}');
 
       if (lastQrData != null) {
         unawaited(
           analyticsService.trackError(
             authToken: '',
             backendUrl: lastQrData!.backendUrl,
-            errorType: 'login_failed',
+            errorType: appError.type.name,
             screen: 'login',
-            message: 'Login failed.',
-            details: error.toString(),
+            message: appError.userMessage,
+            details: appError.diagnosticDetails,
           ),
         );
       }
