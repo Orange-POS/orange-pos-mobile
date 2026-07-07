@@ -11,11 +11,11 @@ import '../services/api_client.dart';
 import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-import 'add_product_screen.dart';
+
 import 'barcode_scanner_screen.dart';
-import 'login_screen.dart';
-import 'product_screen.dart';
+
 import '../core/di/app_dependencies.dart';
+import '../core/navigation/app_routes.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -297,13 +297,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Future<void> openProduct(Product product) async {
     await Navigator.push<Product>(
       context,
-      MaterialPageRoute(
-        builder: (context) => ProductScreen(
-          product: product,
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.product(
+        product: product,
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
   }
@@ -330,9 +328,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => LoginScreen(dependencies: AppDependencies()),
-      ),
+      AppRoutes.login(dependencies: widget.dependencies),
       (route) => false,
     );
   }
@@ -340,13 +336,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
   Future<Product?> openAddProduct(String barcode) async {
     return Navigator.push<Product>(
       context,
-      MaterialPageRoute(
-        builder: (context) => AddProductScreen(
-          barcode: barcode,
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.addProduct(
+        barcode: barcode,
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
   }

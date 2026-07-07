@@ -4,9 +4,9 @@ import '../demo/demo_mode.dart';
 import '../models/product.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
-import 'edit_product_screen.dart';
-import 'update_price_screen.dart';
+
 import '../core/di/app_dependencies.dart';
+import '../core/navigation/app_routes.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
@@ -45,13 +45,11 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> openUpdatePrice() async {
     final updatedProduct = await Navigator.push<Product>(
       context,
-      MaterialPageRoute(
-        builder: (context) => UpdatePriceScreen(
-          product: product,
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.updatePrice(
+        product: widget.product,
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
 
@@ -67,13 +65,11 @@ class _ProductScreenState extends State<ProductScreen> {
   Future<void> openEditProduct() async {
     final updatedProduct = await Navigator.push<Product>(
       context,
-      MaterialPageRoute(
-        builder: (context) => EditProductScreen(
-          product: product,
-          authToken: widget.authToken,
-          backendUrl: widget.backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.editProduct(
+        product: widget.product,
+        authToken: widget.authToken,
+        backendUrl: widget.backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
 

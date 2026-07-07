@@ -10,10 +10,11 @@ import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
 import 'qr_login_scanner_screen.dart';
-import 'scanner_screen.dart';
+
 import '../demo/demo_mode.dart';
 import 'settings_screen.dart';
 import '../core/di/app_dependencies.dart';
+import '../core/navigation/app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -48,12 +49,10 @@ class _LoginScreenState extends State<LoginScreen> {
   void enterDemoLogin() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => ScannerScreen(
-          authToken: DemoMode.authToken,
-          backendUrl: DemoMode.backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.scanner(
+        authToken: DemoMode.authToken,
+        backendUrl: DemoMode.backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
   }
@@ -130,12 +129,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => ScannerScreen(
-            authToken: token,
-            backendUrl: loginData.backendUrl,
-            dependencies: widget.dependencies,
-          ),
+        AppRoutes.scanner(
+          authToken: token,
+          backendUrl: loginData.backendUrl,
+          dependencies: widget.dependencies,
         ),
       );
     } catch (error) {

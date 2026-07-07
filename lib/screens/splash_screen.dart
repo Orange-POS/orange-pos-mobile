@@ -8,9 +8,9 @@ import '../services/analytics_service.dart';
 import '../services/session_service.dart';
 import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
-import 'login_screen.dart';
-import 'scanner_screen.dart';
+
 import '../core/di/app_dependencies.dart';
+import '../core/navigation/app_routes.dart';
 
 class SplashScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -76,12 +76,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => ScannerScreen(
-          authToken: token,
-          backendUrl: backendUrl,
-          dependencies: widget.dependencies,
-        ),
+      AppRoutes.scanner(
+        authToken: token,
+        backendUrl: backendUrl,
+        dependencies: widget.dependencies,
       ),
     );
   }
@@ -89,9 +87,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void openLogin() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => LoginScreen(dependencies: widget.dependencies),
-      ),
+      AppRoutes.login(dependencies: widget.dependencies),
     );
   }
 
