@@ -8,6 +8,7 @@ import 'package:flutter_app/services/auth_service.dart';
 import 'package:flutter_app/services/session_service.dart';
 import 'package:flutter_app/services/token_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_app/services/crash_reporting_service.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -46,6 +47,7 @@ void main() {
       expect(dependencies.authService, isA<AuthService>());
       expect(dependencies.sessionService, isA<SessionService>());
       expect(dependencies.tokenStorage, isA<TokenStorage>());
+      expect(dependencies.crashReportingService, isA<CrashReportingService>());
     });
 
     test('uses provided feature flag controller', () {
