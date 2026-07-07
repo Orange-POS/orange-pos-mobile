@@ -1,4 +1,5 @@
 import 'feature_flags.dart';
+import 'feature_flag_provider.dart';
 
 class FeatureFlagController {
   FeatureFlags _flags;
@@ -12,6 +13,11 @@ class FeatureFlagController {
   FeatureFlagController._(this._flags, this._demoModeEnabled);
 
   FeatureFlags get flags => _flags;
+
+  Future<void> refreshFromProvider(FeatureFlagProvider provider) async {
+    final latestFlags = await provider.loadFlags();
+    updateFlags(latestFlags);
+  }
 
   bool get isDemoModeAvailable {
     return _flags.demoModeAvailable;

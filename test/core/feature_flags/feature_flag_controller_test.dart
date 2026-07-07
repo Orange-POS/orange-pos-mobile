@@ -1,6 +1,7 @@
 import 'package:flutter_app/core/feature_flags/feature_flag_controller.dart';
 import 'package:flutter_app/core/feature_flags/feature_flags.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
 
 void main() {
   group('FeatureFlagController', () {
@@ -50,6 +51,22 @@ void main() {
 
       expect(controller.isDemoModeAvailable, false);
       expect(controller.isDemoModeEnabled, false);
+    });
+
+    test('refreshes flags from provider', () async {
+      final controller = FeatureFlagController();
+
+      controller.enableDemoMode();
+
+      await controller.refreshFromProvider(
+        const LocalFeatureFlagProvider(flags: FeatureFlags.disabled()),
+      );
+
+      expect(controller.isDemoModeAvailable, false);
+      expect(controller.isDemoModeEnabled, false);
+      expect(controller.isAnalyticsEnabled, false);
+      expect(controller.isCrashReportingEnabled, false);
+      expect(controller.isRemoteConfigEnabled, false);
     });
   });
 }

@@ -9,6 +9,7 @@ import 'package:flutter_app/services/session_service.dart';
 import 'package:flutter_app/services/token_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_app/services/crash_reporting_service.dart';
+import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -48,6 +49,7 @@ void main() {
       expect(dependencies.sessionService, isA<SessionService>());
       expect(dependencies.tokenStorage, isA<TokenStorage>());
       expect(dependencies.crashReportingService, isA<CrashReportingService>());
+      expect(dependencies.featureFlagProvider, isA<FeatureFlagProvider>());
     });
 
     test('uses provided feature flag controller', () {

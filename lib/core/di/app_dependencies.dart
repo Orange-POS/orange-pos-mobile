@@ -6,6 +6,7 @@ import '../../services/token_storage.dart';
 import '../config/app_config.dart';
 import '../feature_flags/feature_flag_controller.dart';
 import '../../services/crash_reporting_service.dart';
+import '../feature_flags/feature_flag_provider.dart';
 
 class AppDependencies {
   final AppConfig config;
@@ -16,11 +17,13 @@ class AppDependencies {
   final SessionService sessionService;
   final TokenStorage tokenStorage;
   final CrashReportingService crashReportingService;
+  final FeatureFlagProvider featureFlagProvider;
 
   AppDependencies({
     AppConfig config = const AppConfig.production(),
     FeatureFlagController? featureFlags,
-    this.productRepositoryFactory = const ProductRepositoryFactory(),
+    FeatureFlagProvider? featureFlagProvider,
+    ProductRepositoryFactory? productRepositoryFactory,
     AnalyticsService? analyticsService,
     AuthService? authService,
     SessionService? sessionService,
@@ -29,6 +32,11 @@ class AppDependencies {
   }) : config = config,
        featureFlags =
            featureFlags ?? FeatureFlagController(flags: config.featureFlags),
+       featureFlagProvider =
+           featureFlagProvider ??
+           LocalFeatureFlagProvider(flags: config.featureFlags),
+       productRepositoryFactory =
+           productRepositoryFactory ?? const ProductRepositoryFactory(),
        analyticsService = analyticsService ?? AnalyticsService(),
        authService = authService ?? AuthService(),
        sessionService = sessionService ?? SessionService(),

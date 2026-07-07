@@ -9,9 +9,13 @@ Future<void> main() async {
   final dependencies = AppDependencies();
 
   runZonedGuarded(
-    () {
+    () async {
       FlutterError.onError =
           dependencies.crashReportingService.recordFlutterError;
+
+      await dependencies.featureFlags.refreshFromProvider(
+        dependencies.featureFlagProvider,
+      );
 
       runApp(InventoryTrackerApp(dependencies: dependencies));
     },
