@@ -11,6 +11,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze and Test
@@ -31,6 +35,12 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Verify dependencies
+        run: flutter pub deps
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
 
       - name: Analyze
         run: flutter analyze
@@ -55,6 +65,12 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Show build tools
+        run: |
+          flutter --version
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
 
       - name: Build iOS without codesign
         run: flutter build ios --release --no-codesign
