@@ -7,7 +7,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ios-testflight
+  group: ios-testflight-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -34,6 +34,15 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
 
       - name: Show build tools
         run: |
