@@ -18,6 +18,7 @@ import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
+import '../core/widgets/app_error_state.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -424,9 +425,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
               if (errorMessage != null) ...[
                 const SizedBox(height: 18),
-                _ScannerErrorBox(
-                  errorMessage: errorMessage!,
-                  errorDetails: errorDetails,
+                AppErrorState.box(
+                  title: 'Product Lookup Failed',
+                  message: errorMessage!,
+                  details: errorDetails,
                   onCopyDetails: copyErrorDetails,
                 ),
               ],
@@ -551,64 +553,5 @@ class _ScannerBarcodePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return false;
-  }
-}
-
-class _ScannerErrorBox extends StatelessWidget {
-  final String errorMessage;
-  final String? errorDetails;
-  final VoidCallback onCopyDetails;
-
-  const _ScannerErrorBox({
-    required this.errorMessage,
-    required this.errorDetails,
-    required this.onCopyDetails,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppBrand.errorBackground,
-        border: Border.all(color: AppBrand.errorBorder),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Product Lookup Failed',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-              color: Colors.red,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            errorMessage,
-            style: const TextStyle(color: AppBrand.textPrimary, fontSize: 13),
-          ),
-          if (errorDetails != null) ...[
-            const SizedBox(height: 10),
-            SelectableText(
-              errorDetails!,
-              style: const TextStyle(
-                fontSize: 10,
-                color: AppBrand.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: onCopyDetails,
-              icon: const Icon(Icons.copy, size: 16),
-              label: const Text('Copy Error Details'),
-            ),
-          ],
-        ],
-      ),
-    );
   }
 }

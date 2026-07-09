@@ -14,6 +14,7 @@ import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
+import '../core/widgets/app_error_state.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -199,16 +200,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                       ),
                       if (errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        AppErrorState(message: errorMessage!),
                       ],
                       const SizedBox(height: 82),
                       _UpdatePriceButton(

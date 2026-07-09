@@ -14,6 +14,7 @@ import '../core/di/app_dependencies.dart';
 import '../core/errors/app_error.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
+import '../core/widgets/app_error_state.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -287,16 +288,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       ),
                       if (errorMessage != null) ...[
                         const SizedBox(height: 12),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            errorMessage!,
-                            style: const TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                        AppErrorState(message: errorMessage!),
                       ],
                       const SizedBox(height: 58),
                       _AddProductButton(

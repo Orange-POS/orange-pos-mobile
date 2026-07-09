@@ -17,6 +17,7 @@ import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
+import '../core/widgets/app_error_state.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -245,23 +246,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
               if (errorMessage != null) ...[
                 const SizedBox(height: 18),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppBrand.errorBackground,
-                    border: Border.all(color: AppBrand.errorBorder),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.red,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                AppErrorState.box(
+                  message: errorMessage!,
+                  textAlign: TextAlign.center,
                 ),
               ],
               const Spacer(flex: 4),
