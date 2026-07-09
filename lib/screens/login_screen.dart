@@ -18,6 +18,8 @@ import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_error_state.dart';
+import '../core/widgets/app_surface.dart';
+import '../core/theme/app_radius.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -191,20 +193,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: GestureDetector(
                   onTap: isLoggingIn ? null : openScanner,
-                  child: Container(
+                  child: AppSurface(
                     width: 287,
                     height: 287,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF6EE),
-                      borderRadius: BorderRadius.circular(49),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppBrand.primaryDark.withValues(alpha: 0.18),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
+                    borderRadius: AppRadius.heroCard,
                     child: isLoggingIn
                         ? const Center(child: CircularProgressIndicator())
                         : Center(

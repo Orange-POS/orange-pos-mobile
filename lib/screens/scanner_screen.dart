@@ -19,6 +19,8 @@ import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_error_state.dart';
+import '../core/theme/app_radius.dart';
+import '../core/widgets/app_surface.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -387,20 +389,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
               Center(
                 child: GestureDetector(
                   onTap: isLoading ? null : scanBarcode,
-                  child: Container(
+                  child: AppSurface(
                     width: 305,
                     height: 334,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFEF6EE),
-                      borderRadius: BorderRadius.circular(49),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppBrand.primaryDark.withValues(alpha: 0.18),
-                          blurRadius: 24,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
+                    borderRadius: AppRadius.heroCard,
                     child: isLoading
                         ? const Center(child: CircularProgressIndicator())
                         : const Column(

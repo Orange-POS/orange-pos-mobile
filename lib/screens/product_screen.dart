@@ -8,6 +8,7 @@ import '../widgets/app_chrome.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/widgets/app_button.dart';
+import '../core/widgets/app_surface.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
@@ -177,26 +178,11 @@ class _ProductNameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppSurface(
       width: double.infinity,
       height: 141,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF6EE),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: const Color.fromARGB(
-              255,
-              248,
-              170,
-              153,
-            ).withValues(alpha: 0.18),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
+      shadowColor: const Color.fromARGB(255, 248, 170, 153),
       child: Scrollbar(
         thumbVisibility: false,
         child: SingleChildScrollView(

@@ -15,6 +15,7 @@ import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
+import '../core/widgets/app_surface.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -228,21 +229,10 @@ class _ProductNameCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AppSurface(
       width: double.infinity,
       height: 141,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFEF6EE),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppBrand.primaryDark.withValues(alpha: 0.18),
-            blurRadius: 24,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
       child: Scrollbar(
         thumbVisibility: false,
         child: SingleChildScrollView(
