@@ -48,7 +48,14 @@ class AppButton extends StatelessWidget {
             else
               Icon(icon, size: 24),
             const SizedBox(width: 12),
-            Text(label, style: AppTextStyles.button),
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppTextStyles.button,
+              ),
+            ),
             const Spacer(),
             if (showChevron) const Icon(Icons.chevron_right, size: 36),
           ],
