@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_brand.dart';
+import '../core/theme/app_spacing.dart';
+
+import '../core/theme/app_text_styles.dart';
 
 class AppChrome {
-  static const EdgeInsets pagePadding = EdgeInsets.fromLTRB(20, 19, 20, 10);
+  static const EdgeInsets pagePadding = AppSpacing.pagePadding;
 
   static EdgeInsets scrollPadding(BuildContext context) {
     return EdgeInsets.fromLTRB(
       pagePadding.left,
       pagePadding.top,
       pagePadding.right,
-      MediaQuery.viewInsetsOf(context).bottom + 24,
+      MediaQuery.viewInsetsOf(context).bottom + AppSpacing.xxl,
     );
   }
 
@@ -59,11 +62,7 @@ class AppHeader extends StatelessWidget {
                     title ?? '',
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      color: AppBrand.textDarkGrey,
-                    ),
+                    style: AppTextStyles.screenTitle,
                   ),
           ),
           _HeaderTrailing(
