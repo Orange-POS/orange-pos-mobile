@@ -7,6 +7,7 @@ import '../widgets/app_chrome.dart';
 
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
+import '../core/widgets/app_button.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
@@ -383,31 +384,7 @@ class _ProductButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 76,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppBrand.primaryDark,
-          foregroundColor: AppBrand.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Row(
-          children: [
-            const Spacer(),
-            Icon(icon, size: 24),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-            const Icon(Icons.chevron_right, size: 36),
-          ],
-        ),
-      ),
-    );
+    return AppButton(label: label, icon: icon, onPressed: onPressed);
   }
 }
 

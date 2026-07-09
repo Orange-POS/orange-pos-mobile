@@ -16,6 +16,8 @@ import '../features/products/domain/product_repository.dart';
 import '../core/errors/app_error.dart';
 
 import '../core/analytics/analytics_events.dart';
+import '../core/widgets/app_button.dart';
+import '../core/widgets/app_text_field.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -247,7 +249,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         secondary: 'Required',
                       ),
                       const SizedBox(height: 10),
-                      _OrangeTextField(
+                      AppTextField(
                         controller: nameController,
                         enabled: !isSaving,
                         hintText: 'Name',
@@ -263,7 +265,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       DropdownButtonFormField<int?>(
                         initialValue: safeTaxId,
                         isExpanded: true,
-                        decoration: _orangeInputDecoration(),
+                        decoration: AppTextField.decoration(borderWidth: 4),
                         icon: const Icon(
                           Icons.keyboard_arrow_down,
                           color: Color(0xFF535353),
@@ -352,49 +354,6 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
-class _OrangeTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final bool enabled;
-  final String hintText;
-
-  const _OrangeTextField({
-    required this.controller,
-    required this.enabled,
-    required this.hintText,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      textInputAction: TextInputAction.done,
-      style: const TextStyle(fontSize: 16, color: AppBrand.textDarkGrey),
-      decoration: _orangeInputDecoration(hintText: hintText),
-    );
-  }
-}
-
-InputDecoration _orangeInputDecoration({String? hintText}) {
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: const TextStyle(fontSize: 16, color: Color(0xFF535353)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
-    ),
-    disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 4),
-    ),
-  );
-}
-
 class _EditProductButton extends StatelessWidget {
   final bool isSaving;
   final VoidCallback? onPressed;
@@ -403,37 +362,11 @@ class _EditProductButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 76,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppBrand.primaryDark,
-          foregroundColor: AppBrand.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Row(
-          children: [
-            const Spacer(),
-            isSaving
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppBrand.white,
-                    ),
-                  )
-                : const Icon(Icons.edit, size: 24),
-            const SizedBox(width: 12),
-            Text(
-              isSaving ? 'Saving...' : 'Edite Product',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-          ],
-        ),
-      ),
+    return AppButton(
+      label: isSaving ? 'Saving...' : 'Edit Name & Tax',
+      icon: Icons.edit_square,
+      isLoading: isSaving,
+      onPressed: onPressed,
     );
   }
 }

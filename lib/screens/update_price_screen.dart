@@ -12,6 +12,8 @@ import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import '../core/errors/app_error.dart';
 import '../core/analytics/analytics_events.dart';
+import '../core/widgets/app_button.dart';
+import '../core/widgets/app_text_field.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -171,50 +173,28 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      TextField(
+                      AppTextField(
                         controller: priceController,
                         enabled: !isSaving,
                         autofocus: true,
+                        hintText: 'CHF  XXX.XX',
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        style: const TextStyle(
+                        borderWidth: 4,
+                        textStyle: const TextStyle(
                           fontSize: 21,
                           fontWeight: FontWeight.w600,
                           color: AppBrand.textDarkGrey,
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'CHF  XXX.XX',
-                          hintStyle: const TextStyle(
-                            fontSize: 21,
-                            color: Color(0xFF535353),
-                            fontWeight: FontWeight.w400,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 18,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: AppBrand.primaryDark,
-                              width: 4,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: AppBrand.primaryDark,
-                              width: 4,
-                            ),
-                          ),
-                          disabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: AppBrand.primaryDark,
-                              width: 4,
-                            ),
-                          ),
+                        hintStyle: const TextStyle(
+                          fontSize: 21,
+                          color: Color(0xFF535353),
+                          fontWeight: FontWeight.w400,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 18,
                         ),
                       ),
                       if (errorMessage != null) ...[
@@ -359,38 +339,11 @@ class _UpdatePriceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 76,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppBrand.primaryDark,
-          foregroundColor: AppBrand.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Row(
-          children: [
-            const Spacer(),
-            isSaving
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppBrand.white,
-                    ),
-                  )
-                : const Icon(Icons.edit_square, size: 24),
-            const SizedBox(width: 12),
-            Text(
-              isSaving ? 'Saving...' : 'Update Price',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-            const Icon(Icons.chevron_right, size: 36),
-          ],
-        ),
-      ),
+    return AppButton(
+      label: isSaving ? 'Saving...' : 'Update Price',
+      icon: Icons.edit_square,
+      isLoading: isSaving,
+      onPressed: onPressed,
     );
   }
 }

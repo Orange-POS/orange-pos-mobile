@@ -12,6 +12,8 @@ import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/errors/app_error.dart';
+import '../core/widgets/app_button.dart';
+import '../core/widgets/app_text_field.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -227,7 +229,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       const SizedBox(height: 38),
                       const _FieldLabel(label: 'Product Name', secondary: null),
                       const SizedBox(height: 10),
-                      _OrangeTextField(
+                      AppTextField(
                         controller: nameController,
                         enabled: !isSaving,
                         hintText: 'Name',
@@ -239,7 +241,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         secondary: 'Required',
                       ),
                       const SizedBox(height: 10),
-                      _OrangeTextField(
+                      AppTextField(
                         controller: priceController,
                         enabled: !isSaving,
                         hintText: 'Price',
@@ -258,7 +260,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       DropdownButtonFormField<int?>(
                         initialValue: _safeSelectedTaxId(),
                         isExpanded: true,
-                        decoration: _orangeInputDecoration(),
+                        decoration: AppTextField.decoration(),
                         icon: const Icon(
                           Icons.keyboard_arrow_down,
                           color: Color(0xFF535353),
@@ -426,54 +428,6 @@ class _FieldLabel extends StatelessWidget {
   }
 }
 
-class _OrangeTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final bool enabled;
-  final String hintText;
-  final TextInputType? keyboardType;
-  final TextInputAction? textInputAction;
-
-  const _OrangeTextField({
-    required this.controller,
-    required this.enabled,
-    required this.hintText,
-    this.keyboardType,
-    this.textInputAction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      enabled: enabled,
-      keyboardType: keyboardType,
-      textInputAction: textInputAction,
-      style: const TextStyle(fontSize: 16, color: AppBrand.textDarkGrey),
-      decoration: _orangeInputDecoration(hintText: hintText),
-    );
-  }
-}
-
-InputDecoration _orangeInputDecoration({String? hintText}) {
-  return InputDecoration(
-    hintText: hintText,
-    hintStyle: const TextStyle(fontSize: 16, color: Color(0xFF535353)),
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
-    ),
-    disabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8),
-      borderSide: const BorderSide(color: AppBrand.primaryDark, width: 2),
-    ),
-  );
-}
-
 class _AddProductButton extends StatelessWidget {
   final bool isSaving;
   final VoidCallback? onPressed;
@@ -482,37 +436,12 @@ class _AddProductButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 76,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppBrand.primaryDark,
-          foregroundColor: AppBrand.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        child: Row(
-          children: [
-            const Spacer(),
-            isSaving
-                ? const SizedBox.square(
-                    dimension: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppBrand.white,
-                    ),
-                  )
-                : const Icon(Icons.add_circle, size: 24),
-            const SizedBox(width: 12),
-            Text(
-              isSaving ? 'Saving...' : 'Add New Product',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-          ],
-        ),
-      ),
+    return AppButton(
+      label: isSaving ? 'Saving...' : 'Add New Product',
+      icon: Icons.add_circle,
+      isLoading: isSaving,
+      showChevron: false,
+      onPressed: onPressed,
     );
   }
 }
