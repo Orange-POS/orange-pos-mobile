@@ -12,13 +12,14 @@ import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
 import '../features/products/data/product_repository_factory.dart';
-import '../features/products/domain/product_repository.dart';
+
 import '../core/errors/app_error.dart';
 
 import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
+import '../features/products/application/product_use_cases.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -55,8 +56,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   bool isSaving = false;
   String? errorMessage;
 
-  ProductRepository get productRepository {
-    return productRepositoryFactory.create(
+  ProductUseCases get productUseCases {
+    return productRepositoryFactory.createUseCases(
       authToken: widget.authToken,
       backendUrl: widget.backendUrl,
     );
@@ -93,7 +94,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     });
 
     try {
-      final loadedReferences = await productRepository.loadProductReferences();
+      final loadedReferences = await productUseCases.loadProductReferences();
 
       if (!mounted) return;
 
@@ -141,7 +142,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     try {
       final safeTaxId = _safeSelectedTaxId();
 
-      final updatedProduct = await productRepository.updateProduct(
+      final updatedProduct = await productUseCases.updateProduct(
         product: widget.product,
         name: name,
         taxIds: safeTaxId == null ? null : [safeTaxId],
