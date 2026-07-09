@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../core/di/app_dependencies.dart';
 import '../features/products/data/product_repository_factory.dart';
-import '../features/products/domain/product_repository.dart';
+
 import '../models/product.dart';
 import '../services/analytics_service.dart';
 
@@ -16,6 +16,7 @@ import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
 import '../core/widgets/app_surface.dart';
+import '../features/products/application/product_use_cases.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -49,8 +50,8 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
   bool isSaving = false;
   String? errorMessage;
 
-  ProductRepository get productRepository {
-    return productRepositoryFactory.create(
+  ProductUseCases get productUseCases {
+    return productRepositoryFactory.createUseCases(
       authToken: widget.authToken,
       backendUrl: widget.backendUrl,
     );
@@ -88,7 +89,7 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
     });
 
     try {
-      final updatedProduct = await productRepository.updateProductPrice(
+      final updatedProduct = await productUseCases.updateProductPrice(
         product: widget.product,
         price: newPrice,
       );
