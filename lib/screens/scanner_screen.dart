@@ -21,6 +21,7 @@ import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_error_state.dart';
 import '../core/theme/app_radius.dart';
 import '../core/widgets/app_surface.dart';
+import '../core/widgets/app_badge.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -366,24 +367,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
               ),
               if (isDemoMode) ...[
                 const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 7,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppBrand.primaryLight,
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: AppBrand.primary),
-                  ),
-                  child: const Text(
-                    'Demo Mode',
-                    style: TextStyle(
-                      color: AppBrand.primary,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
+                const AppBadge(label: 'Demo Mode'),
               ],
               const Spacer(flex: 2),
               Center(

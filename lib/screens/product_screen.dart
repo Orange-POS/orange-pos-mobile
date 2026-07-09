@@ -9,6 +9,7 @@ import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/widgets/app_button.dart';
 import '../core/widgets/app_surface.dart';
+import '../core/widgets/app_badge.dart';
 
 class ProductScreen extends StatefulWidget {
   final Product product;
@@ -156,18 +157,7 @@ class _DemoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: AppBrand.primaryLight,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppBrand.primary),
-      ),
-      child: const Text(
-        'Demo Product',
-        style: TextStyle(color: AppBrand.primary, fontWeight: FontWeight.w800),
-      ),
-    );
+    return const AppBadge(label: 'Demo Product');
   }
 }
 
