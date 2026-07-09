@@ -22,6 +22,7 @@ import '../core/widgets/app_error_state.dart';
 import '../core/theme/app_radius.dart';
 import '../core/widgets/app_surface.dart';
 import '../core/widgets/app_badge.dart';
+import '../features/products/application/product_use_cases.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -45,6 +46,13 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;
+  }
+
+  ProductUseCases get productUseCases {
+    return productRepositoryFactory.createUseCases(
+      authToken: widget.authToken,
+      backendUrl: widget.backendUrl,
+    );
   }
 
   bool isLoading = false;
@@ -191,12 +199,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
     });
 
     try {
-      final productRepository = productRepositoryFactory.create(
-        authToken: widget.authToken,
-        backendUrl: widget.backendUrl,
-      );
-
-      final product = await productRepository.findProductByBarcode(
+      final product = await productUseCases.findProductByBarcode(
         scannedBarcode,
       );
 
