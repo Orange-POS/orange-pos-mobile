@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../theme/app_brand.dart';
+import '../core/widgets/app_scanner_overlay.dart';
 
 class QrLoginScannerScreen extends StatefulWidget {
   const QrLoginScannerScreen({super.key});
@@ -48,39 +49,12 @@ class _QrLoginScannerScreenState extends State<QrLoginScannerScreen> {
       body: Stack(
         children: [
           MobileScanner(onDetect: handleBarcode),
-          Center(
-            child: Container(
-              width: 260,
-              height: 260,
-              decoration: BoxDecoration(
-                border: Border.all(color: AppBrand.primary, width: 3),
-                borderRadius: BorderRadius.circular(18),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 24,
-            right: 24,
-            bottom: 36,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppBrand.primary.withValues(alpha: 0.45),
-                ),
-              ),
-              child: const Text(
+          const AppScannerOverlay(
+            frameWidth: 260,
+            frameHeight: 260,
+            frameRadius: 18,
+            message:
                 'Point your camera at the login QR code shown in Odoo POS.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  height: 1.3,
-                ),
-              ),
-            ),
           ),
         ],
       ),
