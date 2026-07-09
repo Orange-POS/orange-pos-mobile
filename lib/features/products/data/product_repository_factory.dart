@@ -4,9 +4,19 @@ import '../../../services/product_service.dart';
 import '../domain/product_repository.dart';
 import 'demo_product_repository.dart';
 import 'odoo_product_repository.dart';
+import '../application/product_use_cases.dart';
 
 class ProductRepositoryFactory {
   const ProductRepositoryFactory();
+
+  ProductUseCases createUseCases({
+    required String authToken,
+    required String backendUrl,
+  }) {
+    return ProductUseCases(
+      repository: create(authToken: authToken, backendUrl: backendUrl),
+    );
+  }
 
   ProductRepository create({
     required String authToken,

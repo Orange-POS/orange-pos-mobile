@@ -1,4 +1,5 @@
 import 'package:flutter_app/demo/demo_mode.dart';
+import 'package:flutter_app/features/products/application/product_use_cases.dart';
 import 'package:flutter_app/features/products/data/demo_product_repository.dart';
 import 'package:flutter_app/features/products/data/odoo_product_repository.dart';
 import 'package:flutter_app/features/products/data/product_repository_factory.dart';
@@ -49,17 +50,30 @@ void main() {
       expect(repository, isA<OdooProductRepository>());
     });
 
-    test('creates Odoo repository when backend url does not match demo url', () {
-      DemoMode.enable();
+    test(
+      'creates Odoo repository when backend url does not match demo url',
+      () {
+        DemoMode.enable();
 
+        const factory = ProductRepositoryFactory();
+
+        final repository = factory.create(
+          authToken: DemoMode.authToken,
+          backendUrl: 'https://example.com',
+        );
+
+        expect(repository, isA<OdooProductRepository>());
+      },
+    );
+    test('creates product use cases', () {
       const factory = ProductRepositoryFactory();
 
-      final repository = factory.create(
+      final useCases = factory.createUseCases(
         authToken: DemoMode.authToken,
-        backendUrl: 'https://example.com',
+        backendUrl: DemoMode.backendUrl,
       );
 
-      expect(repository, isA<OdooProductRepository>());
+      expect(useCases, isA<ProductUseCases>());
     });
   });
 }
