@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../models/qr_login_data.dart';
 import '../services/analytics_service.dart';
-import '../services/auth_service.dart';
-import '../services/token_storage.dart';
+
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
@@ -20,6 +19,7 @@ import '../core/analytics/analytics_events.dart';
 import '../core/widgets/app_error_state.dart';
 import '../core/widgets/app_surface.dart';
 import '../core/theme/app_radius.dart';
+import '../features/auth/application/auth_use_cases.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -32,8 +32,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   QrLoginData? lastQrData;
-  AuthService get authService => widget.dependencies.authService;
-  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
+  AuthUseCases get authUseCases => widget.dependencies.authUseCases;
   AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   bool isLoggingIn = false;
@@ -106,9 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      final token = await authService.loginWithQr(loginData);
-      await tokenStorage.saveToken(token);
-      await tokenStorage.saveBackendUrl(loginData.backendUrl);
+      final token = await authUseCases.loginWithQr(loginData);
 
       unawaited(
         analyticsService.trackEvent(
