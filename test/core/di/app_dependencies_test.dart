@@ -10,6 +10,7 @@ import 'package:flutter_app/services/token_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_app/services/crash_reporting_service.dart';
 import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
+import 'package:flutter_app/features/auth/application/auth_use_cases.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -58,6 +59,12 @@ void main() {
       final dependencies = AppDependencies(featureFlags: featureFlags);
 
       expect(dependencies.featureFlags, same(featureFlags));
+    });
+
+    test('creates auth use cases by default', () {
+      final dependencies = AppDependencies();
+
+      expect(dependencies.authUseCases, isA<AuthUseCases>());
     });
   });
 }

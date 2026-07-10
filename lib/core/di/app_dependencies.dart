@@ -1,12 +1,14 @@
+import '../../features/auth/application/auth_use_cases.dart';
 import '../../features/products/data/product_repository_factory.dart';
 import '../../services/analytics_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/crash_reporting_service.dart';
 import '../../services/session_service.dart';
 import '../../services/token_storage.dart';
 import '../config/app_config.dart';
 import '../feature_flags/feature_flag_controller.dart';
-import '../../services/crash_reporting_service.dart';
 import '../feature_flags/feature_flag_provider.dart';
+
 
 class AppDependencies {
   final AppConfig config;
@@ -18,28 +20,35 @@ class AppDependencies {
   final TokenStorage tokenStorage;
   final CrashReportingService crashReportingService;
   final FeatureFlagProvider featureFlagProvider;
+  final AuthUseCases authUseCases;
 
   AppDependencies({
     AppConfig config = const AppConfig.production(),
     FeatureFlagController? featureFlags,
     FeatureFlagProvider? featureFlagProvider,
-    ProductRepositoryFactory? productRepositoryFactory,
+    this.productRepositoryFactory = const ProductRepositoryFactory(),
     AnalyticsService? analyticsService,
     AuthService? authService,
     SessionService? sessionService,
     TokenStorage? tokenStorage,
     CrashReportingService? crashReportingService,
+    AuthUseCases? authUseCases,
   }) : config = config,
        featureFlags =
            featureFlags ?? FeatureFlagController(flags: config.featureFlags),
        featureFlagProvider =
            featureFlagProvider ??
            LocalFeatureFlagProvider(flags: config.featureFlags),
-       productRepositoryFactory =
-           productRepositoryFactory ?? const ProductRepositoryFactory(),
        analyticsService = analyticsService ?? AnalyticsService(),
        authService = authService ?? AuthService(),
        sessionService = sessionService ?? SessionService(),
        tokenStorage = tokenStorage ?? TokenStorage.instance,
-       crashReportingService = crashReportingService ?? CrashReportingService();
+       crashReportingService = crashReportingService ?? CrashReportingService(),
+       authUseCases =
+           authUseCases ??
+           AuthUseCases(
+             authService: authService ?? AuthService(),
+             sessionService: sessionService ?? SessionService(),
+             tokenStorage: tokenStorage ?? TokenStorage.instance,
+           );
 }
