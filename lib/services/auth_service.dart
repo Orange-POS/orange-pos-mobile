@@ -2,7 +2,9 @@ import '../models/qr_login_data.dart';
 import 'api_client.dart';
 
 class AuthService {
-  final ApiClient apiClient = ApiClient();
+  final ApiClient apiClient;
+
+  AuthService({ApiClient? apiClient}) : apiClient = apiClient ?? ApiClient();
 
   Future<String> loginWithQr(QrLoginData qrLoginData) async {
     final requestBody = {
