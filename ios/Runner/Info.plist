@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>OrangePOS Scanner uses the camera to scan login QR codes and product barcodes.</string>
+	<string>OrangeONE uses the camera to scan login QR codes and product barcodes.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
