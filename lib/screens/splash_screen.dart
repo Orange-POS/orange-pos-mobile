@@ -4,14 +4,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../services/analytics_service.dart';
-import '../services/session_service.dart';
-import '../services/token_storage.dart';
-import '../theme/app_brand.dart';
-
+import '../core/analytics/analytics_events.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
-import '../core/analytics/analytics_events.dart';
+import '../features/auth/application/auth_use_cases.dart';
+import '../services/analytics_service.dart';
+import '../theme/app_brand.dart';
 
 class SplashScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -23,8 +21,7 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
-  SessionService get sessionService => widget.dependencies.sessionService;
+  AuthUseCases get authUseCases => widget.dependencies.authUseCases;
   AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   @override
@@ -34,20 +31,22 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> checkSession() async {
-    final token = await tokenStorage.getToken();
-    final backendUrl = await tokenStorage.getBackendUrl();
+    final savedSession = await authUseCases.getSavedSession();
 
     if (!mounted) {
       return;
     }
 
-    if (token == null || backendUrl == null) {
+    if (savedSession == null) {
       openLogin();
       return;
     }
 
-    final isValidSession = await sessionService.validateSession(
-      authToken: token,
+    final token = savedSession.token;
+    final backendUrl = savedSession.backendUrl;
+
+    final isValidSession = await authUseCases.validateSession(
+      token: token,
       backendUrl: backendUrl,
     );
 
@@ -56,7 +55,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (!isValidSession) {
-      await tokenStorage.clearSession();
+      await authUseCases.clearSession();
 
       if (!mounted) {
         return;
@@ -163,7 +162,7 @@ class _SplashWordmark extends StatelessWidget {
 
 class _SplashLoader extends StatelessWidget {
   static final Uint8List _loaderBytes = base64Decode(
-    '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',
+    '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',
   );
 
   const _SplashLoader();
