@@ -2,7 +2,9 @@ import '../config/api_config.dart';
 import 'api_client.dart';
 
 class SessionService {
-  final ApiClient apiClient = ApiClient();
+  final ApiClient apiClient;
+
+  SessionService({ApiClient? apiClient}) : apiClient = apiClient ?? ApiClient();
 
   Future<bool> validateSession({
     required String authToken,
