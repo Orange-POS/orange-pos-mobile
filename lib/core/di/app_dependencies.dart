@@ -27,8 +27,7 @@ class AppDependencies {
     AppConfig config = const AppConfig.production(),
     FeatureFlagController? featureFlags,
     FeatureFlagProvider? featureFlagProvider,
-    ProductRepositoryFactory productRepositoryFactory =
-        const ProductRepositoryFactory(),
+    ProductRepositoryFactory? productRepositoryFactory,
     ApiClient? apiClient,
     AnalyticsService? analyticsService,
     AuthService? authService,
@@ -51,7 +50,8 @@ class AppDependencies {
       featureFlagProvider:
           featureFlagProvider ??
           LocalFeatureFlagProvider(flags: config.featureFlags),
-      productRepositoryFactory: productRepositoryFactory,
+      productRepositoryFactory:
+          productRepositoryFactory ?? ProductRepositoryFactory(),
       apiClient: resolvedApiClient,
       analyticsService:
           analyticsService ?? AnalyticsService(apiClient: resolvedApiClient),

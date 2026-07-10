@@ -7,7 +7,10 @@ import 'odoo_product_repository.dart';
 import '../application/product_use_cases.dart';
 
 class ProductRepositoryFactory {
-  const ProductRepositoryFactory();
+  final ProductService productService;
+
+  ProductRepositoryFactory({ProductService? productService})
+    : productService = productService ?? ProductService();
 
   ProductUseCases createUseCases({
     required String authToken,
@@ -33,7 +36,7 @@ class ProductRepositoryFactory {
     }
 
     return OdooProductRepository(
-      productService: ProductService(),
+      productService: productService,
       authToken: authToken,
       backendUrl: backendUrl,
     );

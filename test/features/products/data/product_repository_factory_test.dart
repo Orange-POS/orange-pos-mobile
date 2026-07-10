@@ -4,6 +4,7 @@ import 'package:flutter_app/features/products/data/demo_product_repository.dart'
 import 'package:flutter_app/features/products/data/odoo_product_repository.dart';
 import 'package:flutter_app/features/products/data/product_repository_factory.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_app/services/product_service.dart';
 
 void main() {
   group('ProductRepositoryFactory', () {
@@ -14,7 +15,7 @@ void main() {
     test('creates demo repository when demo mode is enabled', () {
       DemoMode.enable();
 
-      const factory = ProductRepositoryFactory();
+      final factory = ProductRepositoryFactory();
 
       final repository = factory.create(
         authToken: DemoMode.authToken,
@@ -27,7 +28,7 @@ void main() {
     test('creates Odoo repository when demo mode is disabled', () {
       DemoMode.disable();
 
-      const factory = ProductRepositoryFactory();
+      final factory = ProductRepositoryFactory();
 
       final repository = factory.create(
         authToken: DemoMode.authToken,
@@ -40,7 +41,7 @@ void main() {
     test('creates Odoo repository when token does not match demo token', () {
       DemoMode.enable();
 
-      const factory = ProductRepositoryFactory();
+      final factory = ProductRepositoryFactory();
 
       final repository = factory.create(
         authToken: 'real-token',
@@ -55,7 +56,7 @@ void main() {
       () {
         DemoMode.enable();
 
-        const factory = ProductRepositoryFactory();
+        final factory = ProductRepositoryFactory();
 
         final repository = factory.create(
           authToken: DemoMode.authToken,
@@ -66,7 +67,7 @@ void main() {
       },
     );
     test('creates product use cases', () {
-      const factory = ProductRepositoryFactory();
+      final factory = ProductRepositoryFactory();
 
       final useCases = factory.createUseCases(
         authToken: DemoMode.authToken,
@@ -74,6 +75,25 @@ void main() {
       );
 
       expect(useCases, isA<ProductUseCases>());
+    });
+
+    test('uses injected product service for Odoo repository', () {
+      final productService = ProductService();
+      final factory = ProductRepositoryFactory(productService: productService);
+
+      final repository = factory.create(
+        authToken: 'real-token',
+        backendUrl: 'https://example.com',
+      );
+
+      expect(repository, isA<OdooProductRepository>());
+      expect(
+        identical(
+          (repository as OdooProductRepository).productService,
+          productService,
+        ),
+        isTrue,
+      );
     });
   });
 }
