@@ -81,8 +81,6 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       loginData = QrLoginData.fromRaw(qrData.toString());
     } catch (error) {
-      debugPrint('QR parse error: $error');
-
       setState(() {
         errorMessage =
             'Invalid QR code. Please scan the QR code from Odoo POS.';
@@ -148,8 +146,6 @@ class _LoginScreenState extends State<LoginScreen> {
         isLoggingIn = false;
         errorMessage = appError.userMessage;
       });
-
-      debugPrint('Login failed: ${appError.diagnosticDetails}');
 
       if (lastQrData != null) {
         unawaited(

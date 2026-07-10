@@ -133,8 +133,6 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
         isSaving = false;
         errorMessage = appError.userMessage;
       });
-
-      debugPrint('Price update failed: ${appError.diagnosticDetails}');
     }
   }
 

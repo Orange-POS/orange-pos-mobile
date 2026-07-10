@@ -266,8 +266,6 @@ class _ScannerScreenState extends State<ScannerScreen> {
           details: appError.diagnosticDetails,
         ),
       );
-
-      debugPrint('Product lookup failed: ${appError.diagnosticDetails}');
     } finally {
       isLookingUpProduct = false;
 

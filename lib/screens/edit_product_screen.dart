@@ -111,10 +111,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
         isLoadingReferences = false;
         errorMessage = appError.userMessage;
       });
-
-      debugPrint(
-        'Product references failed to load: ${appError.diagnosticDetails}',
-      );
     } finally {
       if (mounted) {
         setState(() {
@@ -182,8 +178,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
         isSaving = false;
         errorMessage = appError.userMessage;
       });
-
-      debugPrint('Product update failed: ${appError.diagnosticDetails}');
     } finally {
       if (mounted) {
         setState(() {

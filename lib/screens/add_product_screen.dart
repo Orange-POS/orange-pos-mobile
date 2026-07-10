@@ -95,8 +95,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
         isLoadingReferences = false;
       });
     } catch (error) {
-      debugPrint('Product references failed to load: $error');
-
       if (!mounted) return;
 
       setState(() {
@@ -176,8 +174,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
         isSaving = false;
         errorMessage = appError.userMessage;
       });
-
-      debugPrint('Product creation failed: ${appError.diagnosticDetails}');
     }
   }
 
