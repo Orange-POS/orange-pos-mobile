@@ -43,7 +43,7 @@ flutter pub get
 flutter pub deps
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
-flutter test
+flutter test --coverage
 flutter build ios --release --no-codesign
 ```
 
@@ -51,7 +51,8 @@ Purpose:
 
 - Catch formatting issues.
 - Catch analyzer issues.
-- Run automated tests.
+- Run automated tests with coverage.
+- Upload coverage as a short-lived artifact.
 - Confirm the iOS project can build without signing.
 - Upload the unsigned iOS build as a short-lived artifact.
 
@@ -125,10 +126,11 @@ This keeps uploaded build numbers increasing automatically.
 Before submitting a build to Apple review:
 
 1. Run Flutter CI successfully.
-2. Run TestFlight workflow successfully.
-3. Confirm Demo Mode works for Apple review.
-4. Confirm camera permission text is correct.
-5. Confirm app privacy details are complete in App Store Connect.
-6. Confirm no routing app coverage file is attached unless the app is a routing app.
-7. Confirm screenshots and app metadata match the current app behavior.
+2. Confirm the CI coverage artifact was generated.
+3. Run TestFlight workflow successfully.
+4. Confirm Demo Mode works for Apple review.
+5. Confirm camera permission text is correct.
+6. Confirm app privacy details are complete in App Store Connect.
+7. Confirm no routing app coverage file is attached unless the app is a routing app.
+8. Confirm screenshots and app metadata match the current app behavior.
 
