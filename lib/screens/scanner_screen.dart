@@ -8,7 +8,6 @@ import '../features/products/data/product_repository_factory.dart';
 import '../models/product.dart';
 import '../services/analytics_service.dart';
 
-import '../services/token_storage.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
@@ -23,6 +22,7 @@ import '../core/theme/app_radius.dart';
 import '../core/widgets/app_surface.dart';
 import '../core/widgets/app_badge.dart';
 import '../features/products/application/product_use_cases.dart';
+import '../features/auth/application/auth_use_cases.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -41,7 +41,7 @@ class ScannerScreen extends StatefulWidget {
 }
 
 class _ScannerScreenState extends State<ScannerScreen> {
-  TokenStorage get tokenStorage => widget.dependencies.tokenStorage;
+  AuthUseCases get authUseCases => widget.dependencies.authUseCases;
   AnalyticsService get analyticsService => widget.dependencies.analyticsService;
 
   ProductRepositoryFactory get productRepositoryFactory {
@@ -323,7 +323,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       DemoMode.disable();
     }
 
-    await tokenStorage.clearSession();
+    await authUseCases.clearSession();
 
     if (!mounted) {
       return;
