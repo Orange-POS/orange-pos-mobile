@@ -9,7 +9,6 @@ import '../config/app_config.dart';
 import '../feature_flags/feature_flag_controller.dart';
 import '../feature_flags/feature_flag_provider.dart';
 
-
 class AppDependencies {
   final AppConfig config;
   final FeatureFlagController featureFlags;
@@ -26,29 +25,47 @@ class AppDependencies {
     AppConfig config = const AppConfig.production(),
     FeatureFlagController? featureFlags,
     FeatureFlagProvider? featureFlagProvider,
-    this.productRepositoryFactory = const ProductRepositoryFactory(),
+    ProductRepositoryFactory productRepositoryFactory =
+        const ProductRepositoryFactory(),
     AnalyticsService? analyticsService,
     AuthService? authService,
     SessionService? sessionService,
     TokenStorage? tokenStorage,
     CrashReportingService? crashReportingService,
     AuthUseCases? authUseCases,
-  }) : config = config,
-       featureFlags =
-           featureFlags ?? FeatureFlagController(flags: config.featureFlags),
-       featureFlagProvider =
-           featureFlagProvider ??
-           LocalFeatureFlagProvider(flags: config.featureFlags),
-       analyticsService = analyticsService ?? AnalyticsService(),
-       authService = authService ?? AuthService(),
-       sessionService = sessionService ?? SessionService(),
-       tokenStorage = tokenStorage ?? TokenStorage.instance,
-       crashReportingService = crashReportingService ?? CrashReportingService(),
-       authUseCases =
+  }) : this._(
+         config: config,
+         featureFlags:
+             featureFlags ?? FeatureFlagController(flags: config.featureFlags),
+         featureFlagProvider:
+             featureFlagProvider ??
+             LocalFeatureFlagProvider(flags: config.featureFlags),
+         productRepositoryFactory: productRepositoryFactory,
+         analyticsService: analyticsService ?? AnalyticsService(),
+         authService: authService ?? AuthService(),
+         sessionService: sessionService ?? SessionService(),
+         tokenStorage: tokenStorage ?? TokenStorage.instance,
+         crashReportingService:
+             crashReportingService ?? CrashReportingService(),
+         authUseCases: authUseCases,
+       );
+
+  AppDependencies._({
+    required this.config,
+    required this.featureFlags,
+    required this.featureFlagProvider,
+    required this.productRepositoryFactory,
+    required this.analyticsService,
+    required this.authService,
+    required this.sessionService,
+    required this.tokenStorage,
+    required this.crashReportingService,
+    AuthUseCases? authUseCases,
+  }) : authUseCases =
            authUseCases ??
            AuthUseCases(
-             authService: authService ?? AuthService(),
-             sessionService: sessionService ?? SessionService(),
-             tokenStorage: tokenStorage ?? TokenStorage.instance,
+             authService: authService,
+             sessionService: sessionService,
+             tokenStorage: tokenStorage,
            );
 }

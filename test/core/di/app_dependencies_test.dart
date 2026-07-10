@@ -66,5 +66,30 @@ void main() {
 
       expect(dependencies.authUseCases, isA<AuthUseCases>());
     });
+
+    test('auth use cases reuse dependency service instances', () {
+      final authService = AuthService();
+      final sessionService = SessionService();
+      final tokenStorage = TokenStorage.instance;
+
+      final dependencies = AppDependencies(
+        authService: authService,
+        sessionService: sessionService,
+        tokenStorage: tokenStorage,
+      );
+
+      expect(
+        identical(dependencies.authUseCases.authService, authService),
+        isTrue,
+      );
+      expect(
+        identical(dependencies.authUseCases.sessionService, sessionService),
+        isTrue,
+      );
+      expect(
+        identical(dependencies.authUseCases.tokenStorage, tokenStorage),
+        isTrue,
+      );
+    });
   });
 }
