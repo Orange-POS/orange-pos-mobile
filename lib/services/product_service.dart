@@ -4,7 +4,9 @@ import 'api_client.dart';
 import '../models/product_references.dart';
 
 class ProductService {
-  final ApiClient apiClient = ApiClient();
+  final ApiClient apiClient;
+
+  ProductService({ApiClient? apiClient}) : apiClient = apiClient ?? ApiClient();
 
   Future<Product?> findProductByBarcode({
     required String authToken,
