@@ -2,7 +2,10 @@ import '../config/api_config.dart';
 import 'api_client.dart';
 
 class AnalyticsService {
-  final ApiClient apiClient = ApiClient();
+  final ApiClient apiClient;
+
+  AnalyticsService({ApiClient? apiClient})
+    : apiClient = apiClient ?? ApiClient();
 
   Future<void> trackEvent({
     required String authToken,
