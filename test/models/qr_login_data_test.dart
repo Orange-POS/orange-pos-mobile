@@ -93,5 +93,59 @@ void main() {
         throwsA(isA<FormatException>()),
       );
     });
+
+    test('accepts http backend URLs for local Odoo setups', () {
+      final rawValue = _rawQrLoginData(
+        backendUrl: 'http://192.168.1.2',
+        restEndpointUrl: 'http://192.168.1.2/mupi/mobile/api/auth/qr',
+      );
+
+      final loginData = QrLoginData.fromRaw(rawValue);
+
+      expect(loginData.backendUrl, 'http://192.168.1.2');
+      expect(
+        loginData.restEndpointUrl,
+        'http://192.168.1.2/mupi/mobile/api/auth/qr',
+      );
+    });
+
+    test('accepts https backend URLs for production setups', () {
+      final rawValue = _rawQrLoginData(
+        backendUrl: 'https://pos.example.com',
+        restEndpointUrl: 'https://pos.example.com/mupi/mobile/api/auth/qr',
+      );
+
+      final loginData = QrLoginData.fromRaw(rawValue);
+
+      expect(loginData.backendUrl, 'https://pos.example.com');
+      expect(
+        loginData.restEndpointUrl,
+        'https://pos.example.com/mupi/mobile/api/auth/qr',
+      );
+    });
+
+    test('rejects unsupported URL schemes', () {
+      final rawValue = _rawQrLoginData(
+        backendUrl: 'ftp://pos.example.com',
+        restEndpointUrl: 'ftp://pos.example.com/mupi/mobile/api/auth/qr',
+      );
+
+      expect(() => QrLoginData.fromRaw(rawValue), throwsFormatException);
+    });
+  });
+}
+
+String _rawQrLoginData({
+  required String backendUrl,
+  required String restEndpointUrl,
+}) {
+  return jsonEncode({
+    'challenge': 'challenge-123',
+    'nonce': 'nonce-123',
+    'pos_session_id': 10,
+    'pos_config_id': 20,
+    'backend_url': backendUrl,
+    'rest_endpoint_url': restEndpointUrl,
+    'expires_at': '2099-01-01T00:00:00Z',
   });
 }
