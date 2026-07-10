@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_app/services/crash_reporting_service.dart';
 import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
 import 'package:flutter_app/features/auth/application/auth_use_cases.dart';
+import 'package:flutter_app/services/api_client.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -88,6 +89,29 @@ void main() {
       );
       expect(
         identical(dependencies.authUseCases.tokenStorage, tokenStorage),
+        isTrue,
+      );
+    });
+
+    test('creates an api client by default', () {
+      final dependencies = AppDependencies();
+
+      expect(dependencies.apiClient, isA<ApiClient>());
+    });
+
+    test('uses injected api client for default API services', () {
+      final apiClient = ApiClient();
+
+      final dependencies = AppDependencies(apiClient: apiClient);
+
+      expect(identical(dependencies.apiClient, apiClient), isTrue);
+      expect(
+        identical(dependencies.analyticsService.apiClient, apiClient),
+        isTrue,
+      );
+      expect(identical(dependencies.authService.apiClient, apiClient), isTrue);
+      expect(
+        identical(dependencies.sessionService.apiClient, apiClient),
         isTrue,
       );
     });

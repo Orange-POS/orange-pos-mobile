@@ -1,6 +1,7 @@
 import '../../features/auth/application/auth_use_cases.dart';
 import '../../features/products/data/product_repository_factory.dart';
 import '../../services/analytics_service.dart';
+import '../../services/api_client.dart';
 import '../../services/auth_service.dart';
 import '../../services/crash_reporting_service.dart';
 import '../../services/session_service.dart';
@@ -20,52 +21,65 @@ class AppDependencies {
   final CrashReportingService crashReportingService;
   final FeatureFlagProvider featureFlagProvider;
   final AuthUseCases authUseCases;
+  final ApiClient apiClient;
 
-  AppDependencies({
+  factory AppDependencies({
     AppConfig config = const AppConfig.production(),
     FeatureFlagController? featureFlags,
     FeatureFlagProvider? featureFlagProvider,
     ProductRepositoryFactory productRepositoryFactory =
         const ProductRepositoryFactory(),
+    ApiClient? apiClient,
     AnalyticsService? analyticsService,
     AuthService? authService,
     SessionService? sessionService,
     TokenStorage? tokenStorage,
     CrashReportingService? crashReportingService,
     AuthUseCases? authUseCases,
-  }) : this._(
-         config: config,
-         featureFlags:
-             featureFlags ?? FeatureFlagController(flags: config.featureFlags),
-         featureFlagProvider:
-             featureFlagProvider ??
-             LocalFeatureFlagProvider(flags: config.featureFlags),
-         productRepositoryFactory: productRepositoryFactory,
-         analyticsService: analyticsService ?? AnalyticsService(),
-         authService: authService ?? AuthService(),
-         sessionService: sessionService ?? SessionService(),
-         tokenStorage: tokenStorage ?? TokenStorage.instance,
-         crashReportingService:
-             crashReportingService ?? CrashReportingService(),
-         authUseCases: authUseCases,
-       );
+  }) {
+    final resolvedApiClient = apiClient ?? ApiClient();
+    final resolvedAuthService =
+        authService ?? AuthService(apiClient: resolvedApiClient);
+    final resolvedSessionService =
+        sessionService ?? SessionService(apiClient: resolvedApiClient);
+    final resolvedTokenStorage = tokenStorage ?? TokenStorage.instance;
 
-  AppDependencies._({
+    return AppDependencies._(
+      config: config,
+      featureFlags:
+          featureFlags ?? FeatureFlagController(flags: config.featureFlags),
+      featureFlagProvider:
+          featureFlagProvider ??
+          LocalFeatureFlagProvider(flags: config.featureFlags),
+      productRepositoryFactory: productRepositoryFactory,
+      apiClient: resolvedApiClient,
+      analyticsService:
+          analyticsService ?? AnalyticsService(apiClient: resolvedApiClient),
+      authService: resolvedAuthService,
+      sessionService: resolvedSessionService,
+      tokenStorage: resolvedTokenStorage,
+      crashReportingService: crashReportingService ?? CrashReportingService(),
+      authUseCases:
+          authUseCases ??
+          AuthUseCases(
+            authService: resolvedAuthService,
+            sessionService: resolvedSessionService,
+            tokenStorage: resolvedTokenStorage,
+          ),
+    );
+  }
+
+  const AppDependencies._({
     required this.config,
     required this.featureFlags,
     required this.featureFlagProvider,
     required this.productRepositoryFactory,
+    required this.apiClient,
     required this.analyticsService,
     required this.authService,
     required this.sessionService,
     required this.tokenStorage,
     required this.crashReportingService,
-    AuthUseCases? authUseCases,
-  }) : authUseCases =
-           authUseCases ??
-           AuthUseCases(
-             authService: authService,
-             sessionService: sessionService,
-             tokenStorage: tokenStorage,
-           );
+    required this.authUseCases,
+  });
 }
