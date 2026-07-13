@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
@@ -117,7 +115,10 @@ class _SplashScreenState extends State<SplashScreen> {
                 top: topOffset + (479.91 * scale),
                 width: 59.62 * scale,
                 height: 59.62 * scale,
-                child: const _SplashLoader(),
+                child: const CircularProgressIndicator(
+                  strokeWidth: 3,
+                  color: AppBrand.primary,
+                ),
               ),
             ],
           );
@@ -156,23 +157,6 @@ class _SplashWordmark extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _SplashLoader extends StatelessWidget {
-  static final Uint8List _loaderBytes = base64Decode(
-    'iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAEpUlEQVR4AexZTYgcRRR+r2e7J/szrogHUQQPhgWFiAdP7tEk/oAoYUN2JoiKeglERPQ68aqeFAIBAyLObEggEg9GVsFLThEUlCALEgTZgyDq7s7sZnp2unzfzvRmp7pqpsbpnjXJNlVTr773873XNbNdXevRLX7tFbDbC7i3ArYVUC/TvrVS8Ag6ZJvdsHgmK1A/nn++Hga/kKJr6JCBDZusyT/1Albn6d4oUu8rooeoc0EGBl0HSm1IvQCPg8OS3Yx0vc10dDo+1Dz1AlpE+20Z9dLZfPrhAxWwMp9/ujbvf7hSDE7Vj/mPm4KPefyDCQfWSwf9f+nOBSBpj9Vlxfy2OJVVjq8A00knP298yaS+0XFg0On4sHPJpX+IejH/rBiWd1oqRRPA/inlD+3EIXtjY6/IeJFI/dHudLGDCZxukxz6B4yIXrRZ5YgSP9iJzzaWC9XwSKHavK/dwyPAbDGGwR0LUMs2EkVR3aYbBe5UwFikLjHTuikhWYGfTfioMKcCJs81f2wp+kBPSr5a701Wmt/r+CjnTgUgoelqeKrFfJiYT5JSJ5qKHgMG3W525wKQ5N2VxmKh0vi4sNA8fc9C+BOw3e4DFbDbyZr4b98CVmVXuVYM5vC0zWorbLqjMQZOcCMH5BLj+mhcgZVS/hnm4IoYnxeDsmyFL9WK/uL6S+MPCJZpA0et6C+CE9xCdh65ICeRE01sujE1R+Os1EeCdj1hFfHB1mYLuKiya+AAl8Ywg5yQm4ZTooC/x4L9TPSwbtieqyfbY5afZg7khNx05kQBvkebulE8Z2LZ0sezbMZeHKbcEgVM+eF1JvqNDJciumqAU4VsHMgJuelkiQL4U7rBHr8phkvStxv287kod3IbyEgAB7i08EvICblpePI3AAO8eCgVzjLRcex3BDs6VW0emji38bvImTZwgEtIjoIbOSAX5CRYoiI2OAaJ67wC2JfI66OcNvAZVnw2UnwV2CBkJlvEQCzEJOIz4FgrBmVyvJwKwBlQjukdPaY4l/+aDw7ouOscvoih28vr67vg1HHTXPxNcDcWMb2GY5RutD3zSc22pcE/bb7gAqdLRKcC5G/xhjUY27ceVp9Y0cO3J2fsL6NTAS3yvhVbY2PKXSftWj82/qB8j7+oFYNldMjANDNigy91rl6cHZOtwamA6YXG13gqbnl0PuR7ug5sqnojUVzkbZ4VsxdkX3M/OuQOJuLNBl/EQKybKBEwcO7EbLJTAXDGU9Ejfo6IP5FTidPcUrPASLvkbs8peXfQYPk/Bx+ETscRA7EQkyQ2OICR4+U52m2ZTVYbXxWqjdflVOIEzoq2QO1D7t6jGrQ9tekQCzERGxzbDg7CQAU4xMPu8JrNTsisOptPP1xi9jMZTC87x+/Eo2srLnO0pY4Ocmo99QKwc4yY31JEv8ZZQo4Egy7G0hpTLwCJTVcalwvN8ACOH9EhA4Mu7Z5JAUiSL9AGjh/RIQPLomdWQBbJmmLuFWC6K6PE/gUAAP//205gUQAAAAZJREFUAwCy4bVwYI58KQAAAABJRU5ErkJggg==',
-  );
-
-  const _SplashLoader();
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.memory(
-      _loaderBytes,
-      fit: BoxFit.contain,
-      gaplessPlayback: true,
     );
   }
 }

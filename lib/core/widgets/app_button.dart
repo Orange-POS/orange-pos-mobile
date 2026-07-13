@@ -36,7 +36,6 @@ class AppButton extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Spacer(),
             if (isLoading)
               const SizedBox.square(
                 dimension: 18,
@@ -48,16 +47,18 @@ class AppButton extends StatelessWidget {
             else
               Icon(icon, size: 24),
             const SizedBox(width: 12),
-            Flexible(
+            Expanded(
               child: Text(
                 label,
                 maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                overflow: TextOverflow.visible,
                 style: AppTextStyles.button,
               ),
             ),
-            const Spacer(),
-            if (showChevron) const Icon(Icons.chevron_right, size: 36),
+            if (showChevron) ...[
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right, size: 36),
+            ],
           ],
         ),
       ),
