@@ -30,11 +30,7 @@ void main() {
     test('converts to json', () {
       const tax = ProductTax(id: 2, name: 'Zero Tax', amount: 0);
 
-      expect(tax.toJson(), {
-        'id': 2,
-        'name': 'Zero Tax',
-        'amount': 0,
-      });
+      expect(tax.toJson(), {'id': 2, 'name': 'Zero Tax', 'amount': 0});
     });
   });
 }

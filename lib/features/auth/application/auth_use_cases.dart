@@ -3,7 +3,6 @@ import '../../../services/auth_service.dart';
 import '../../../services/session_service.dart';
 import '../../../services/token_storage.dart';
 
-
 class AuthUseCases {
   final AuthService authService;
   final SessionService sessionService;
@@ -30,10 +29,7 @@ class AuthUseCases {
       return null;
     }
 
-    return SavedSession(
-      token: token,
-      backendUrl: backendUrl,
-    );
+    return SavedSession(token: token, backendUrl: backendUrl);
   }
 
   Future<bool> validateSession({
@@ -55,8 +51,5 @@ class SavedSession {
   final String token;
   final String backendUrl;
 
-  const SavedSession({
-    required this.token,
-    required this.backendUrl,
-  });
+  const SavedSession({required this.token, required this.backendUrl});
 }

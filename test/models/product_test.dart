@@ -52,21 +52,13 @@ void main() {
     });
 
     test('formats price to two decimals', () {
-      const product = Product(
-        id: 1,
-        name: 'Test Product',
-        price: 25,
-      );
+      const product = Product(id: 1, name: 'Test Product', price: 25);
 
       expect(product.formattedPrice, '25.00');
     });
 
     test('returns default tax label when taxes are empty', () {
-      const product = Product(
-        id: 1,
-        name: 'Test Product',
-        price: 25,
-      );
+      const product = Product(id: 1, name: 'Test Product', price: 25);
 
       expect(product.taxLabel, 'Default');
     });
@@ -93,10 +85,7 @@ void main() {
         barcode: '100001',
       );
 
-      final updated = product.copyWith(
-        name: 'New Name',
-        price: 20,
-      );
+      final updated = product.copyWith(name: 'New Name', price: 20);
 
       expect(updated.id, 1);
       expect(updated.name, 'New Name');
