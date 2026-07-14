@@ -28,6 +28,20 @@ class AppConfig {
       environment = AppEnvironment.staging,
       featureFlags = const FeatureFlags.production();
 
+  factory AppConfig.fromEnvironment({
+    String environmentName = const String.fromEnvironment(
+      'APP_ENV',
+      defaultValue: 'production',
+    ),
+  }) {
+    return switch (environmentName.toLowerCase()) {
+      'development' || 'dev' => const AppConfig.development(),
+      'staging' || 'stage' => const AppConfig.staging(),
+      'production' || 'prod' => const AppConfig.production(),
+      _ => const AppConfig.production(),
+    };
+  }
+
   String get environmentName {
     return switch (environment) {
       AppEnvironment.development => 'development',

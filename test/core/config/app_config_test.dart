@@ -36,5 +36,51 @@ void main() {
       expect(config.isStaging, true);
       expect(config.isProduction, false);
     });
+
+    test('fromEnvironment defaults to production', () {
+      final config = AppConfig.fromEnvironment();
+
+      expect(config.environment, AppEnvironment.production);
+      expect(config.appName, 'OrangeONE');
+    });
+
+    test('fromEnvironment supports development aliases', () {
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'development').environment,
+        AppEnvironment.development,
+      );
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'dev').environment,
+        AppEnvironment.development,
+      );
+    });
+
+    test('fromEnvironment supports staging aliases', () {
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'staging').environment,
+        AppEnvironment.staging,
+      );
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'stage').environment,
+        AppEnvironment.staging,
+      );
+    });
+
+    test('fromEnvironment supports production aliases', () {
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'production').environment,
+        AppEnvironment.production,
+      );
+      expect(
+        AppConfig.fromEnvironment(environmentName: 'prod').environment,
+        AppEnvironment.production,
+      );
+    });
+
+    test('fromEnvironment falls back to production for unknown values', () {
+      final config = AppConfig.fromEnvironment(environmentName: 'unknown');
+
+      expect(config.environment, AppEnvironment.production);
+    });
   });
 }
