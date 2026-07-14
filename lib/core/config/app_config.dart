@@ -18,6 +18,24 @@ class AppConfig {
       environment = AppEnvironment.production,
       featureFlags = const FeatureFlags.production();
 
+  const AppConfig.development()
+    : appName = 'OrangeONE Dev',
+      environment = AppEnvironment.development,
+      featureFlags = const FeatureFlags.disabled();
+
+  const AppConfig.staging()
+    : appName = 'OrangeONE Staging',
+      environment = AppEnvironment.staging,
+      featureFlags = const FeatureFlags.production();
+
+  String get environmentName {
+    return switch (environment) {
+      AppEnvironment.development => 'development',
+      AppEnvironment.staging => 'staging',
+      AppEnvironment.production => 'production',
+    };
+  }
+
   bool get isProduction {
     return environment == AppEnvironment.production;
   }

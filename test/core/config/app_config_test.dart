@@ -1,5 +1,5 @@
 import 'package:flutter_app/core/config/app_config.dart';
-import 'package:flutter_app/core/feature_flags/feature_flags.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -13,31 +13,26 @@ void main() {
       expect(config.isDevelopment, false);
       expect(config.isStaging, false);
       expect(config.featureFlags.demoModeAvailable, true);
+      expect(config.environmentName, 'production');
     });
 
-    test('supports development config', () {
-      const config = AppConfig(
-        appName: 'OrangeONE Dev',
-        environment: AppEnvironment.development,
-        featureFlags: FeatureFlags.disabled(),
-      );
+    test('development config uses development environment', () {
+      const config = AppConfig.development();
 
       expect(config.appName, 'OrangeONE Dev');
       expect(config.environment, AppEnvironment.development);
+      expect(config.environmentName, 'development');
       expect(config.isDevelopment, true);
       expect(config.isProduction, false);
       expect(config.featureFlags.demoModeAvailable, false);
     });
 
-    test('supports staging config', () {
-      const config = AppConfig(
-        appName: 'OrangeONE Staging',
-        environment: AppEnvironment.staging,
-        featureFlags: FeatureFlags.production(),
-      );
+    test('staging config uses staging environment', () {
+      const config = AppConfig.staging();
 
       expect(config.appName, 'OrangeONE Staging');
       expect(config.environment, AppEnvironment.staging);
+      expect(config.environmentName, 'staging');
       expect(config.isStaging, true);
       expect(config.isProduction, false);
     });
