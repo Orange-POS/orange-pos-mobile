@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 
 import 'app/inventory_tracker_app.dart';
@@ -17,7 +17,9 @@ Future<void> main() async {
         dependencies.featureFlagProvider,
       );
 
-      runApp(InventoryTrackerApp(dependencies: dependencies));
+      runApp(
+        ProviderScope(child: InventoryTrackerApp(dependencies: dependencies)),
+      );
     },
     (error, stackTrace) async {
       await dependencies.crashReportingService.recordError(
