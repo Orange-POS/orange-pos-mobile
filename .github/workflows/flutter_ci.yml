@@ -81,7 +81,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
 
       - name: Build iOS without codesign
-        run: flutter build ios --release --no-codesign
+        run: flutter build ios --release --no-codesign --dart-define=APP_ENV=production
 
       - name: Upload unsigned iOS build
         uses: actions/upload-artifact@v4
