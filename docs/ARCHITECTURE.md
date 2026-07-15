@@ -45,6 +45,25 @@ screens
       -> ApiClient / secure storage
 ```
 
+## State Management Direction
+
+OrangeONE uses Riverpod as the state management foundation.
+
+Current Phase 27 usage:
+
+- `ProviderScope` wraps the app at startup.
+- `appDependenciesProvider` exposes `AppDependencies`.
+- Existing constructor-based dependency injection remains in place.
+- Screens are not rewritten yet.
+
+Rules:
+
+1. Do not move screen logic into providers without a focused phase.
+2. Use providers first for shared dependencies and feature state.
+3. Keep business logic in use cases, not widgets.
+4. Keep API calls inside services/repositories, not widgets.
+5. Add tests for new providers.
+
 ## Dependency Injection
 
 App-level dependencies are created in:
