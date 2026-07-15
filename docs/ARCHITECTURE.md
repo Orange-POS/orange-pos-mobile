@@ -223,6 +223,15 @@ Flutter CI runs formatting, analyzer, coverage tests, and unsigned iOS build.
 
 TestFlight CI builds and uploads signed iOS builds through GitHub Actions.
 
+## Firebase Direction
+
+Firebase adoption is planned but not installed yet.
+
+The Firebase rollout plan is documented in:
+
+```text
+docs/FIREBASE.md
+
 ## Architecture Rules
 
 1. Screens should focus on UI state, navigation, and rendering.
