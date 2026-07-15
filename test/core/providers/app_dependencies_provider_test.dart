@@ -1,18 +1,35 @@
-import 'package:flutter_app/core/config/app_config.dart';
+import 'package:flutter_app/core/di/app_dependencies.dart';
 import 'package:flutter_app/core/providers/app_dependencies_provider.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('appDependenciesProvider', () {
-    test('provides app dependencies with production config by default', () {
+    test('throws when it is not overridden', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final dependencies = container.read(appDependenciesProvider);
+      expect(
+        () => container.read(appDependenciesProvider),
+        throwsA(
+          predicate<Object>((error) {
+            return error.toString().contains(
+              'appDependenciesProvider must be overridden',
+            );
+          }, 'provider override error message'),
+        ),
+      );
+    });
 
-      expect(dependencies.config.environment, AppEnvironment.production);
-      expect(dependencies.config.appName, 'OrangeONE');
+    test('uses the root ProviderScope override', () {
+      final dependencies = AppDependencies();
+      final container = ProviderContainer(
+        overrides: [appDependenciesProvider.overrideWithValue(dependencies)],
+      );
+      addTearDown(container.dispose);
+
+      expect(container.read(appDependenciesProvider), same(dependencies));
     });
   });
 }
