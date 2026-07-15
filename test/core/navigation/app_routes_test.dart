@@ -11,6 +11,7 @@ import 'package:flutter_app/screens/update_price_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_app/demo/demo_mode.dart';
 
+
 void main() {
   group('AppRoutes', () {
     final dependencies = AppDependencies();

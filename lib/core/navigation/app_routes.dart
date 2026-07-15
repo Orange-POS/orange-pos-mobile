@@ -9,6 +9,7 @@ import '../../screens/product_screen.dart';
 import '../../screens/scanner_screen.dart';
 import '../../screens/update_price_screen.dart';
 import '../di/app_dependencies.dart';
+import '../../screens/barcode_scanner_screen.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -18,6 +19,12 @@ class AppRoutes {
   }) {
     return MaterialPageRoute(
       builder: (context) => LoginScreen(dependencies: dependencies),
+    );
+  }
+
+  static MaterialPageRoute<String> barcodeScanner() {
+    return MaterialPageRoute(
+      builder: (context) => const BarcodeScannerScreen(),
     );
   }
 

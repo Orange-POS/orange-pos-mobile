@@ -11,8 +11,6 @@ import '../services/analytics_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
-import 'barcode_scanner_screen.dart';
-
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
@@ -155,12 +153,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     final barcode = isDemoMode
         ? await pickDemoBarcode()
-        : await Navigator.push<String>(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const BarcodeScannerScreen(),
-            ),
-          );
+        : await Navigator.push<String>(context, AppRoutes.barcodeScanner());
 
     isScannerOpen = false;
 
