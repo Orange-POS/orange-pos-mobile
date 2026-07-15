@@ -21,6 +21,7 @@ import '../core/widgets/app_surface.dart';
 import '../core/widgets/app_badge.dart';
 import '../features/products/application/product_use_cases.dart';
 import '../features/auth/application/auth_use_cases.dart';
+import '../core/ui/app_snack_bar.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -283,9 +284,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product lookup error copied.')),
-    );
+    AppSnackBar.showMessage(context, 'Error details copied');
   }
 
   Future<void> openProduct(Product product) async {
@@ -321,9 +320,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
 
     await AppRoutes.goToLoginAndClearStack(
-  context,
-  dependencies: widget.dependencies,
-);
+      context,
+      dependencies: widget.dependencies,
+    );
   }
 
   Future<Product?> openAddProduct(String barcode) async {
