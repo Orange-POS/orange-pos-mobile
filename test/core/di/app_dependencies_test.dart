@@ -115,5 +115,19 @@ void main() {
         isTrue,
       );
     });
+
+    test('uses production environment config by default', () {
+      final dependencies = AppDependencies();
+
+      expect(dependencies.config.environment, AppEnvironment.production);
+      expect(dependencies.config.appName, 'OrangeONE');
+    });
+
+    test('uses provided config when supplied', () {
+      final dependencies = AppDependencies(config: const AppConfig.staging());
+
+      expect(dependencies.config.environment, AppEnvironment.staging);
+      expect(dependencies.config.appName, 'OrangeONE Staging');
+    });
   });
 }

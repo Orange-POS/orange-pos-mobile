@@ -36,13 +36,64 @@ Demo mode:
 
 ## Target Environments
 
-The app should eventually support:
+The app supports these code-level environments:
 
 ```text
-dev
+development
 staging
 production
 ```
+
+Current status:
+
+- `production` is the default.
+- `development` is available through `APP_ENV`.
+- `staging` is available through `APP_ENV`.
+- Native Android/iOS flavors are not configured yet.
+
+## Build-Time Environment Selection
+
+The app can select its environment with the `APP_ENV` Dart define.
+
+Default:
+
+```bash
+flutter run
+```
+
+uses:
+
+```text
+production
+```
+
+Development:
+
+```bash
+flutter run --dart-define=APP_ENV=development
+```
+
+Staging:
+
+```bash
+flutter run --dart-define=APP_ENV=staging
+```
+
+Production:
+
+```bash
+flutter run --dart-define=APP_ENV=production
+```
+
+Supported aliases:
+
+```text
+development, dev
+staging, stage
+production, prod
+```
+
+Unknown values fall back to production.
 
 ## Demo Mode Safety Rules
 

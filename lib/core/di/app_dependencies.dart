@@ -24,7 +24,7 @@ class AppDependencies {
   final ApiClient apiClient;
 
   factory AppDependencies({
-    AppConfig config = const AppConfig.production(),
+    AppConfig? config,
     FeatureFlagController? featureFlags,
     FeatureFlagProvider? featureFlagProvider,
     ProductRepositoryFactory? productRepositoryFactory,
@@ -42,14 +42,15 @@ class AppDependencies {
     final resolvedSessionService =
         sessionService ?? SessionService(apiClient: resolvedApiClient);
     final resolvedTokenStorage = tokenStorage ?? TokenStorage.instance;
-
+    final resolvedConfig = config ?? AppConfig.fromEnvironment();
     return AppDependencies._(
-      config: config,
+      config: resolvedConfig,
       featureFlags:
-          featureFlags ?? FeatureFlagController(flags: config.featureFlags),
+          featureFlags ??
+          FeatureFlagController(flags: resolvedConfig.featureFlags),
       featureFlagProvider:
           featureFlagProvider ??
-          LocalFeatureFlagProvider(flags: config.featureFlags),
+          LocalFeatureFlagProvider(flags: resolvedConfig.featureFlags),
       productRepositoryFactory:
           productRepositoryFactory ?? ProductRepositoryFactory(),
       apiClient: resolvedApiClient,

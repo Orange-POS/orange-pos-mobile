@@ -204,6 +204,7 @@ jobs:
         run: |
           flutter build ipa \
             --release \
+            --dart-define=APP_ENV=production \
             --build-number "${{ github.run_number }}" \
             --export-options-plist=ios/ExportOptions.plist
 
