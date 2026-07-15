@@ -320,11 +320,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      AppRoutes.login(dependencies: widget.dependencies),
-      (route) => false,
-    );
+    await AppRoutes.goToLoginAndClearStack(
+  context,
+  dependencies: widget.dependencies,
+);
   }
 
   Future<Product?> openAddProduct(String barcode) async {

@@ -40,6 +40,43 @@ class AppRoutes {
     );
   }
 
+  static Future<void> goToLoginAndClearStack(
+  BuildContext context, {
+  required AppDependencies dependencies,
+}) {
+  return Navigator.pushAndRemoveUntil(
+    context,
+    login(dependencies: dependencies),
+    (route) => false,
+  );
+}
+
+static Future<void> replaceWithLogin(
+  BuildContext context, {
+  required AppDependencies dependencies,
+}) {
+  return Navigator.pushReplacement(
+    context,
+    login(dependencies: dependencies),
+  );
+}
+
+static Future<void> replaceWithScanner(
+  BuildContext context, {
+  required String authToken,
+  required String backendUrl,
+  required AppDependencies dependencies,
+}) {
+  return Navigator.pushReplacement(
+    context,
+    scanner(
+      authToken: authToken,
+      backendUrl: backendUrl,
+      dependencies: dependencies,
+    ),
+  );
+}
+
   static MaterialPageRoute<void> scanner({
     required String authToken,
     required String backendUrl,
