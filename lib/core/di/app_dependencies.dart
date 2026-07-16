@@ -9,6 +9,8 @@ import '../../services/token_storage.dart';
 import '../config/app_config.dart';
 import '../feature_flags/feature_flag_controller.dart';
 import '../feature_flags/feature_flag_provider.dart';
+import '../crash/crash_reporter.dart';
+
 
 class AppDependencies {
   final AppConfig config;
@@ -18,7 +20,7 @@ class AppDependencies {
   final AuthService authService;
   final SessionService sessionService;
   final TokenStorage tokenStorage;
-  final CrashReportingService crashReportingService;
+  final CrashReporter crashReporter;
   final FeatureFlagProvider featureFlagProvider;
   final AuthUseCases authUseCases;
   final ApiClient apiClient;
@@ -33,7 +35,7 @@ class AppDependencies {
     AuthService? authService,
     SessionService? sessionService,
     TokenStorage? tokenStorage,
-    CrashReportingService? crashReportingService,
+    CrashReporter? crashReporter,
     AuthUseCases? authUseCases,
   }) {
     final resolvedApiClient = apiClient ?? ApiClient();
@@ -59,7 +61,7 @@ class AppDependencies {
       authService: resolvedAuthService,
       sessionService: resolvedSessionService,
       tokenStorage: resolvedTokenStorage,
-      crashReportingService: crashReportingService ?? CrashReportingService(),
+      crashReporter: crashReporter ?? CrashReportingService(),
       authUseCases:
           authUseCases ??
           AuthUseCases(
@@ -80,7 +82,7 @@ class AppDependencies {
     required this.authService,
     required this.sessionService,
     required this.tokenStorage,
-    required this.crashReportingService,
+    required this.crashReporter,
     required this.authUseCases,
   });
 }

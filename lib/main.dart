@@ -10,8 +10,7 @@ Future<void> main() async {
 
   runZonedGuarded(
     () async {
-      FlutterError.onError =
-          dependencies.crashReportingService.recordFlutterError;
+      FlutterError.onError = dependencies.crashReporter.recordFlutterError;
 
       await dependencies.featureFlags.refreshFromProvider(
         dependencies.featureFlagProvider,
@@ -20,7 +19,7 @@ Future<void> main() async {
       runApp(InventoryTrackerApp(dependencies: dependencies));
     },
     (error, stackTrace) async {
-      await dependencies.crashReportingService.recordError(
+      await dependencies.crashReporter.recordError(
         error,
         stackTrace,
         reason: 'Uncaught async error',
