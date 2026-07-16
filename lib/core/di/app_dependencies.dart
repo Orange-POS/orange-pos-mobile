@@ -11,7 +11,6 @@ import '../feature_flags/feature_flag_controller.dart';
 import '../feature_flags/feature_flag_provider.dart';
 import '../crash/crash_reporter.dart';
 
-
 class AppDependencies {
   final AppConfig config;
   final FeatureFlagController featureFlags;
