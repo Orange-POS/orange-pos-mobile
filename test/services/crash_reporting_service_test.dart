@@ -21,23 +21,54 @@ void main() {
       );
     });
 
-    test('records Flutter errors without throwing', () async {
-      var didPresentError = false;
-      final service = CrashReportingService(
-        presentFlutterError: (details) {
-          didPresentError = true;
-        },
-      );
-
-      await service.recordFlutterError(
-        FlutterErrorDetails(
-          exception: Exception('flutter error'),
-          stack: StackTrace.current,
+    test(
+      'records Flutter errors as non-fatal reports with original details',
+      () async {
+        var didPresentError = false;
+        final exception = Exception('flutter error');
+        final stackTrace = StackTrace.current;
+        final details = FlutterErrorDetails(
+          exception: exception,
+          stack: stackTrace,
           context: ErrorDescription('unit test context'),
-        ),
-      );
+        );
 
-      expect(didPresentError, isTrue);
-    });
+        final service = _RecordingCrashReportingService(
+          presentFlutterError: (details) {
+            didPresentError = true;
+          },
+        );
+
+        await service.recordFlutterError(details);
+
+        expect(didPresentError, isTrue);
+        expect(service.recordedError, same(exception));
+        expect(service.recordedStackTrace, same(stackTrace));
+        expect(service.recordedReason, 'unit test context');
+        expect(service.recordedFatal, isFalse);
+      },
+    );
   });
+}
+
+class _RecordingCrashReportingService extends CrashReportingService {
+  Object? recordedError;
+  StackTrace? recordedStackTrace;
+  String? recordedReason;
+  bool? recordedFatal;
+
+  _RecordingCrashReportingService({required super.presentFlutterError});
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    String? reason,
+    bool fatal = false,
+  }) async {
+    recordedError = error;
+    recordedStackTrace = stackTrace;
+    recordedReason = reason;
+    recordedFatal = fatal;
+  }
 }
