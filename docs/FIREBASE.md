@@ -167,6 +167,47 @@ This document defines how Firebase should be integrated into OrangeONE.
 
 OrangeONE currently integrates Firebase packages for Crashlytics preparation:
 
+## Crashlytics Validation
+
+Crashlytics has three validation layers.
+
+### Unit Tests
+
+Automated tests cover:
+
+- Firebase startup initializes Firebase and enables Crashlytics collection.
+- Firebase startup failures are propagated to the resolver.
+- Crash reporter resolution returns Firebase reporting when startup succeeds.
+- Crash reporter resolution falls back and records the startup failure when Firebase is unavailable.
+- App startup routes Flutter framework errors to the resolved crash reporter.
+- App startup routes uncaught async errors as fatal reports.
+- Feature flag refresh still runs before the app is started.
+- Firebase crash reporter forwards Flutter, non-fatal, and fatal errors to the Crashlytics client.
+
+### Build Validation
+
+CI validates native platform setup by running:
+
+```bash
+flutter analyze
+flutter test
+flutter build apk --release --dart-define=APP_ENV=production
+flutter build ios --release --no-codesign --dart-define=APP_ENV=production
+
+## Crashlytics End-To-End Validation
+
+Crashlytics fallback keeps the app usable if Firebase startup fails, but fallback reporting alone does not prove Firebase is working.
+
+For that reason, Crashlytics must be validated in two ways.
+
+### Build-Time Validation
+
+CI must prove the native Firebase wiring is buildable:
+
+```bash
+flutter build apk --release --dart-define=APP_ENV=production
+flutter build ios --release --no-codesign --dart-define=APP_ENV=production
+
 ```text
 firebase_core
 firebase_crashlytics
