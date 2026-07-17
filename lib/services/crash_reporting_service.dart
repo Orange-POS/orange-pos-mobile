@@ -1,8 +1,18 @@
 import 'package:flutter/foundation.dart';
 
-class CrashReportingService {
+import '../core/crash/crash_reporter.dart';
+
+typedef FlutterErrorPresenter = void Function(FlutterErrorDetails details);
+
+class CrashReportingService implements CrashReporter {
+  final FlutterErrorPresenter presentFlutterError;
+
+  CrashReportingService({FlutterErrorPresenter? presentFlutterError})
+    : presentFlutterError = presentFlutterError ?? FlutterError.presentError;
+
+  @override
   Future<void> recordFlutterError(FlutterErrorDetails details) async {
-    FlutterError.presentError(details);
+    presentFlutterError(details);
 
     await recordError(
       details.exception,
@@ -12,6 +22,7 @@ class CrashReportingService {
     );
   }
 
+  @override
   Future<void> recordError(
     Object error,
     StackTrace? stackTrace, {
