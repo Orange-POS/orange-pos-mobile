@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final token = savedSession.token;
     final backendUrl = savedSession.backendUrl;
 
-    final isValidSession = await authUseCases.validateSession(
+    final sessionValidationResult = await authUseCases.validateSession(
       token: token,
       backendUrl: backendUrl,
     );
@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
       return;
     }
 
-    if (!isValidSession) {
+    if (sessionValidationResult == SessionValidationResult.invalid) {
       await authUseCases.clearSession();
 
       if (!mounted) {

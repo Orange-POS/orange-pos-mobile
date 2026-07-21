@@ -22,4 +22,7 @@ class ApiConfig {
 
   static const String analyticsErrorEndpoint =
       '/mupi/mobile/api/analytics/error';
+
+  static const String sessionValidateEndpoint =
+      '/mupi/mobile/auth/session/validate';
 }
