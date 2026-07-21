@@ -7,11 +7,13 @@ class AuthUseCases {
   final AuthService authService;
   final SessionService sessionService;
   final TokenStorage tokenStorage;
+  final Duration sessionValidationTimeout;
 
   const AuthUseCases({
     required this.authService,
     required this.sessionService,
     required this.tokenStorage,
+    this.sessionValidationTimeout = const Duration(seconds: 5),
   });
 
   Future<String> loginWithQr(QrLoginData loginData) async {
@@ -35,11 +37,14 @@ class AuthUseCases {
   Future<bool> validateSession({
     required String token,
     required String backendUrl,
-  }) {
-    return sessionService.validateSession(
-      authToken: token,
-      backendUrl: backendUrl,
-    );
+  }) async {
+    try {
+      return await sessionService
+          .validateSession(authToken: token, backendUrl: backendUrl)
+          .timeout(sessionValidationTimeout, onTimeout: () => false);
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> clearSession() {
