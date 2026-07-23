@@ -1,4 +1,4 @@
-package com.example.flutter_app
+package ch.orangepos.productscanner
 
 import io.flutter.embedding.android.FlutterActivity
 
