@@ -80,6 +80,13 @@ jobs:
           xcodebuild -version
           xcrun --sdk iphoneos --show-sdk-version
 
+      - name: Write Firebase iOS config
+        if: ${{ env.FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64 != '' }}
+        env:
+          FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          echo "$FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > ios/Runner/GoogleService-Info.plist
+
       - name: Build iOS without codesign
         run: flutter build ios --release --no-codesign --dart-define=APP_ENV=production
 

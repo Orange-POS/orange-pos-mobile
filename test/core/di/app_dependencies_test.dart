@@ -12,6 +12,8 @@ import 'package:flutter_app/services/crash_reporting_service.dart';
 import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
 import 'package:flutter_app/features/auth/application/auth_use_cases.dart';
 import 'package:flutter_app/services/api_client.dart';
+import 'package:flutter_app/core/crash/crash_reporter.dart';
+import 'package:flutter/foundation.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -50,7 +52,7 @@ void main() {
       expect(dependencies.authService, isA<AuthService>());
       expect(dependencies.sessionService, isA<SessionService>());
       expect(dependencies.tokenStorage, isA<TokenStorage>());
-      expect(dependencies.crashReportingService, isA<CrashReportingService>());
+      expect(dependencies.crashReporter, isA<CrashReportingService>());
       expect(dependencies.featureFlagProvider, isA<FeatureFlagProvider>());
     });
 
@@ -129,5 +131,25 @@ void main() {
       expect(dependencies.config.environment, AppEnvironment.staging);
       expect(dependencies.config.appName, 'OrangeONE Staging');
     });
+
+    test('uses injected crash reporter', () {
+      final crashReporter = _FakeCrashReporter();
+      final dependencies = AppDependencies(crashReporter: crashReporter);
+
+      expect(dependencies.crashReporter, same(crashReporter));
+    });
   });
+}
+
+class _FakeCrashReporter implements CrashReporter {
+  @override
+  Future<void> recordFlutterError(FlutterErrorDetails details) async {}
+
+  @override
+  Future<void> recordError(
+    Object error,
+    StackTrace? stackTrace, {
+    String? reason,
+    bool fatal = false,
+  }) async {}
 }
