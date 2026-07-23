@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,8 +8,6 @@ import '../core/crash/crash_reporter.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/providers/app_dependencies_provider.dart';
 import 'inventory_tracker_app.dart';
-import 'dart:ui';
-import 'dart:async';
 
 typedef AppRunner = void Function(Widget app);
 
