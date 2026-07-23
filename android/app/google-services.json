@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "68759270725",
+    "project_id": "orangeone-test",
+    "storage_bucket": "orangeone-test.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:68759270725:android:8f8dec831cff089039fa2c",
+        "android_client_info": {
+          "package_name": "ch.orangepos.productscanner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0Sx5aIbctul0dVqcEqPWSySH8qTmUwjY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
