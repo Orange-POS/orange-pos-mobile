@@ -14,6 +14,7 @@ void main() {
       expect(config.isStaging, false);
       expect(config.featureFlags.demoModeAvailable, true);
       expect(config.environmentName, 'production');
+      expect(config.crashTestEnabled, false);
     });
 
     test('development config uses development environment', () {
@@ -25,6 +26,7 @@ void main() {
       expect(config.isDevelopment, true);
       expect(config.isProduction, false);
       expect(config.featureFlags.demoModeAvailable, false);
+      expect(config.crashTestEnabled, false);
     });
 
     test('staging config uses staging environment', () {
@@ -35,6 +37,7 @@ void main() {
       expect(config.environmentName, 'staging');
       expect(config.isStaging, true);
       expect(config.isProduction, false);
+      expect(config.crashTestEnabled, false);
     });
 
     test('fromEnvironment defaults to production', () {
@@ -81,6 +84,16 @@ void main() {
       final config = AppConfig.fromEnvironment(environmentName: 'unknown');
 
       expect(config.environment, AppEnvironment.production);
+    });
+
+    test('fromEnvironment supports crash test flag', () {
+      final config = AppConfig.fromEnvironment(
+        environmentName: 'production',
+        crashTestEnabled: true,
+      );
+
+      expect(config.environment, AppEnvironment.production);
+      expect(config.crashTestEnabled, true);
     });
   });
 }

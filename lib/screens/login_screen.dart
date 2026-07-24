@@ -38,7 +38,10 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorMessage;
 
   Future<void> openSettings() async {
-    await Navigator.push(context, AppRoutes.settings());
+    await Navigator.push(
+      context,
+      AppRoutes.settings(dependencies: widget.dependencies),
+    );
 
     if (mounted) {
       setState(() {});
