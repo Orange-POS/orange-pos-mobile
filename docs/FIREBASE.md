@@ -216,6 +216,36 @@ The trigger is hidden by default and only appears when the app is built with:
 ```bash
 --dart-define=ENABLE_CRASH_TEST=true
 
+## App Error Observability
+
+OrangeONE reports selected app/backend communication failures to Firebase Crashlytics as non-fatal errors through `AppErrorReporter`.
+
+Current non-fatal reporting covers:
+
+- saved session validation failures
+- QR login failures
+- product lookup failures from the scanner
+
+Reported safe context:
+
+- screen
+- action
+- app environment
+- API endpoint path
+- HTTP status code, when available
+
+Sensitive data must not be reported:
+
+- auth tokens
+- raw QR login payloads
+- full backend URLs with sensitive query parameters
+- response bodies
+- customer-sensitive product data
+
+API errors are sanitized before reporting so Firebase receives safe diagnostic information instead of raw backend URLs or response bodies.
+
+Crashlytics should be used for crash/error visibility, not real-time operational dashboards. Console counts can be delayed or require refresh while Firebase processes events.
+
 ```text
 firebase_core
 firebase_crashlytics

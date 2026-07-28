@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import 'app/app_startup.dart';
-
 import 'core/crash/crash_reporter_resolver.dart';
 import 'core/di/app_dependencies.dart';
 import 'core/firebase/firebase_app_startup.dart';

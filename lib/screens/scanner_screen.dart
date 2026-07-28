@@ -22,6 +22,7 @@ import '../core/widgets/app_badge.dart';
 import '../features/products/application/product_use_cases.dart';
 import '../features/auth/application/auth_use_cases.dart';
 import '../core/ui/app_snack_bar.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -45,6 +46,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;
+  }
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
   }
 
   ProductUseCases get productUseCases {
@@ -238,10 +243,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       await openProduct(product);
       clearLastScan();
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
+    } catch (error, stackTrace) {
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'scanner',
+          action: 'find_product_by_barcode',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 
