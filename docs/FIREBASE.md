@@ -225,6 +225,10 @@ Current non-fatal reporting covers:
 - saved session validation failures
 - QR login failures
 - product lookup failures from the scanner
+- product reference loading failures
+- product creation failures
+- product update failures
+- product price update failures
 
 Reported safe context:
 
