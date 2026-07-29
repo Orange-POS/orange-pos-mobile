@@ -78,6 +78,6 @@ ios/.symlinks/
 ios/Flutter/Generated.xcconfig
 ios/Flutter/flutter_export_environment.sh
 
-# Firebase local config files
+# Firebase local config files are written by CI from GitHub secrets.
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist

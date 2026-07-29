@@ -252,6 +252,15 @@ API errors are sanitized before reporting so Firebase receives safe diagnostic i
 
 Crashlytics should be used for crash/error visibility, not real-time operational dashboards. Console counts can be delayed or require refresh while Firebase processes events.
 
+## iOS Crashlytics Validation
+
+iOS Crashlytics uses `GoogleService-Info.plist`.
+
+The plist must not be committed to the repository. CI writes it from this GitHub secret:
+
+```text
+FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64
+
 ```text
 firebase_core
 firebase_crashlytics
