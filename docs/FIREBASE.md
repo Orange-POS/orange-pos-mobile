@@ -261,6 +261,18 @@ The plist must not be committed to the repository. CI writes it from this GitHub
 ```text
 FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64
 
+## Firebase App Distribution
+
+Android release APKs can be uploaded to Firebase App Distribution from the `Android APK Build` GitHub Actions workflow.
+
+Distribution runs only when the workflow is manually dispatched.
+
+Required GitHub secrets:
+
+```text
+FIREBASE_ANDROID_APP_ID
+FIREBASE_APP_DISTRIBUTION_SERVICE_ACCOUNT_JSON
+
 ```text
 firebase_core
 firebase_crashlytics
