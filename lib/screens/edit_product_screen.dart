@@ -6,7 +6,7 @@ import '../core/di/app_dependencies.dart';
 import '../models/product.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -47,7 +47,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return widget.dependencies.productRepositoryFactory;
   }
 
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   late final TextEditingController nameController;
 

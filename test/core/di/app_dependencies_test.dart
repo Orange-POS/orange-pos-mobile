@@ -15,6 +15,7 @@ import 'package:flutter_app/services/api_client.dart';
 import 'package:flutter_app/core/crash/crash_test_service.dart';
 import 'package:flutter_app/core/crash/firebase_crash_test_service.dart';
 import 'package:flutter_app/core/errors/app_error_reporter.dart';
+import 'package:flutter_app/core/analytics/observable_analytics_service.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -25,6 +26,10 @@ void main() {
       expect(dependencies.config.isProduction, true);
       expect(dependencies.featureFlags.isDemoModeAvailable, true);
       expect(dependencies.appErrorReporter, isA<AppErrorReporter>());
+      expect(
+        dependencies.observableAnalyticsService,
+        isA<ObservableAnalyticsService>(),
+      );
     });
 
     test('uses feature flags from provided config', () {
@@ -161,5 +166,29 @@ void main() {
       expect(dependencies.appErrorReporter.crashReporter, same(crashReporter));
       expect(dependencies.appErrorReporter.config, same(config));
     });
+    test(
+      'observable analytics service reuses analytics and error reporter',
+      () {
+        final analyticsService = AnalyticsService();
+        final appErrorReporter = AppErrorReporter(
+          crashReporter: CrashReportingService(),
+          config: const AppConfig.production(),
+        );
+
+        final dependencies = AppDependencies(
+          analyticsService: analyticsService,
+          appErrorReporter: appErrorReporter,
+        );
+
+        expect(
+          dependencies.observableAnalyticsService.analyticsService,
+          same(analyticsService),
+        );
+        expect(
+          dependencies.observableAnalyticsService.appErrorReporter,
+          same(appErrorReporter),
+        );
+      },
+    );
   });
 }

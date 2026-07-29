@@ -6,7 +6,7 @@ import '../core/analytics/analytics_events.dart';
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../features/auth/application/auth_use_cases.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 import '../theme/app_brand.dart';
 import '../core/errors/app_error_reporter.dart';
 
@@ -21,7 +21,9 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   AppErrorReporter get appErrorReporter {
     return widget.dependencies.appErrorReporter;

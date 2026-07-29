@@ -6,7 +6,7 @@ import '../features/products/data/product_repository_factory.dart';
 
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 import '../core/analytics/analytics_events.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -39,7 +39,9 @@ class AddProductScreen extends StatefulWidget {
 class _AddProductScreenState extends State<AddProductScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;

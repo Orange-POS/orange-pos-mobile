@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/qr_login_data.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -32,7 +32,9 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   QrLoginData? lastQrData;
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   bool isLoggingIn = false;
   String? authToken;

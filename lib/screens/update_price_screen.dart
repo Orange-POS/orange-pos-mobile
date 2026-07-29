@@ -6,7 +6,7 @@ import '../core/di/app_dependencies.dart';
 import '../features/products/data/product_repository_factory.dart';
 
 import '../models/product.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -42,8 +42,8 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
     return widget.dependencies.productRepositoryFactory;
   }
 
-  AnalyticsService get analyticsService {
-    return widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
   }
 
   AppErrorReporter get appErrorReporter {

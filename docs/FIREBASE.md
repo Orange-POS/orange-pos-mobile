@@ -220,6 +220,8 @@ The trigger is hidden by default and only appears when the app is built with:
 
 OrangeONE reports selected app/backend communication failures to Firebase Crashlytics as non-fatal errors through `AppErrorReporter`.
 
+Analytics failure observability also reports analytics event/error delivery failures as non-fatal errors. Analytics failures remain non-blocking for app users.
+
 Current non-fatal reporting covers:
 
 - saved session validation failures

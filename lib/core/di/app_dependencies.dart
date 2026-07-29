@@ -13,6 +13,7 @@ import '../crash/crash_reporter.dart';
 import '../crash/crash_test_service.dart';
 import '../crash/firebase_crash_test_service.dart';
 import '../errors/app_error_reporter.dart';
+import '../analytics/observable_analytics_service.dart';
 
 class AppDependencies {
   final AppConfig config;
@@ -28,6 +29,7 @@ class AppDependencies {
   final ApiClient apiClient;
   final CrashTestService crashTestService;
   final AppErrorReporter appErrorReporter;
+  final ObservableAnalyticsService observableAnalyticsService;
 
   factory AppDependencies({
     AppConfig? config,
@@ -43,6 +45,7 @@ class AppDependencies {
     AuthUseCases? authUseCases,
     CrashTestService? crashTestService,
     AppErrorReporter? appErrorReporter,
+    ObservableAnalyticsService? observableAnalyticsService,
   }) {
     final resolvedApiClient = apiClient ?? ApiClient();
     final resolvedAuthService =
@@ -58,6 +61,16 @@ class AppDependencies {
         AppErrorReporter(
           crashReporter: resolvedCrashReporter,
           config: resolvedConfig,
+        );
+    final resolvedAnalyticsService =
+        analyticsService ??
+        AnalyticsService(apiClient: resolvedApiClient, swallowFailures: false);
+
+    final resolvedObservableAnalyticsService =
+        observableAnalyticsService ??
+        ObservableAnalyticsService(
+          analyticsService: resolvedAnalyticsService,
+          appErrorReporter: resolvedAppErrorReporter,
         );
     final resolvedCrashTestService =
         crashTestService ??
@@ -75,12 +88,12 @@ class AppDependencies {
       productRepositoryFactory:
           productRepositoryFactory ?? ProductRepositoryFactory(),
       apiClient: resolvedApiClient,
-      analyticsService:
-          analyticsService ?? AnalyticsService(apiClient: resolvedApiClient),
+      analyticsService: resolvedAnalyticsService,
+      observableAnalyticsService: resolvedObservableAnalyticsService,
       authService: resolvedAuthService,
       sessionService: resolvedSessionService,
       tokenStorage: resolvedTokenStorage,
-      crashReporter: crashReporter ?? CrashReportingService(),
+      crashReporter: resolvedCrashReporter,
       appErrorReporter: resolvedAppErrorReporter,
       authUseCases:
           authUseCases ??
@@ -107,5 +120,6 @@ class AppDependencies {
     required this.authUseCases,
     required this.crashTestService,
     required this.appErrorReporter,
+    required this.observableAnalyticsService,
   });
 }

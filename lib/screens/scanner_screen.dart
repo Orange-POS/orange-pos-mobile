@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import '../demo/demo_mode.dart';
 import '../features/products/data/product_repository_factory.dart';
 import '../models/product.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -42,7 +42,9 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;
