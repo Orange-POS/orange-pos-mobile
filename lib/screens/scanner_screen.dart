@@ -11,8 +11,6 @@ import '../services/analytics_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
-import 'barcode_scanner_screen.dart';
-
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
@@ -23,6 +21,7 @@ import '../core/widgets/app_surface.dart';
 import '../core/widgets/app_badge.dart';
 import '../features/products/application/product_use_cases.dart';
 import '../features/auth/application/auth_use_cases.dart';
+import '../core/ui/app_snack_bar.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -155,12 +154,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     final barcode = isDemoMode
         ? await pickDemoBarcode()
-        : await Navigator.push<String>(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const BarcodeScannerScreen(),
-            ),
-          );
+        : await Navigator.push<String>(context, AppRoutes.barcodeScanner());
 
     isScannerOpen = false;
 
@@ -290,9 +284,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Product lookup error copied.')),
-    );
+    AppSnackBar.showMessage(context, 'Error details copied');
   }
 
   Future<void> openProduct(Product product) async {
@@ -327,10 +319,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
       return;
     }
 
-    Navigator.pushAndRemoveUntil(
+    await AppRoutes.goToLoginAndClearStack(
       context,
-      AppRoutes.login(dependencies: widget.dependencies),
-      (route) => false,
+      dependencies: widget.dependencies,
     );
   }
 

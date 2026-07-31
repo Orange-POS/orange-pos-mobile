@@ -72,20 +72,18 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
 
-    Navigator.pushReplacement(
+    await AppRoutes.replaceWithScanner(
       context,
-      AppRoutes.scanner(
-        authToken: token,
-        backendUrl: backendUrl,
-        dependencies: widget.dependencies,
-      ),
+      authToken: token,
+      backendUrl: backendUrl,
+      dependencies: widget.dependencies,
     );
   }
 
-  void openLogin() {
-    Navigator.pushReplacement(
+  Future<void> openLogin() async {
+    await AppRoutes.replaceWithLogin(
       context,
-      AppRoutes.login(dependencies: widget.dependencies),
+      dependencies: widget.dependencies,
     );
   }
 

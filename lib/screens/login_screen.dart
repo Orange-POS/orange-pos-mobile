@@ -8,10 +8,8 @@ import '../services/analytics_service.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
-import 'qr_login_scanner_screen.dart';
-
 import '../demo/demo_mode.dart';
-import 'settings_screen.dart';
+
 import '../core/di/app_dependencies.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/errors/app_error.dart';
@@ -40,10 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorMessage;
 
   Future<void> openSettings() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const SettingsScreen()),
-    );
+    await Navigator.push(context, AppRoutes.settings());
 
     if (mounted) {
       setState(() {});
@@ -67,10 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final qrData = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const QrLoginScannerScreen()),
-    );
+    final qrData = await Navigator.push(context, AppRoutes.qrLoginScanner());
 
     if (!mounted || qrData == null) {
       return;
