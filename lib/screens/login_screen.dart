@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../models/qr_login_data.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -18,6 +18,7 @@ import '../core/widgets/app_error_state.dart';
 import '../core/widgets/app_surface.dart';
 import '../core/theme/app_radius.dart';
 import '../features/auth/application/auth_use_cases.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -31,14 +32,23 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   QrLoginData? lastQrData;
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   bool isLoggingIn = false;
   String? authToken;
   String? errorMessage;
 
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
+  }
+
   Future<void> openSettings() async {
-    await Navigator.push(context, AppRoutes.settings());
+    await Navigator.push(
+      context,
+      AppRoutes.settings(dependencies: widget.dependencies),
+    );
 
     if (mounted) {
       setState(() {});
@@ -127,10 +137,15 @@ class _LoginScreenState extends State<LoginScreen> {
           dependencies: widget.dependencies,
         ),
       );
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
+    } catch (error, stackTrace) {
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'login',
+          action: 'login_with_qr',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 

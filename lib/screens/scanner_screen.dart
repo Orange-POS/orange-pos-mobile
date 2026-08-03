@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import '../demo/demo_mode.dart';
 import '../features/products/data/product_repository_factory.dart';
 import '../models/product.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -22,6 +22,7 @@ import '../core/widgets/app_badge.dart';
 import '../features/products/application/product_use_cases.dart';
 import '../features/auth/application/auth_use_cases.dart';
 import '../core/ui/app_snack_bar.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class ScannerScreen extends StatefulWidget {
   final String authToken;
@@ -41,10 +42,16 @@ class ScannerScreen extends StatefulWidget {
 
 class _ScannerScreenState extends State<ScannerScreen> {
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;
+  }
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
   }
 
   ProductUseCases get productUseCases {
@@ -238,10 +245,15 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       await openProduct(product);
       clearLastScan();
-    } catch (error) {
-      if (!mounted) {
-        return;
-      }
+    } catch (error, stackTrace) {
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'scanner',
+          action: 'find_product_by_barcode',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 

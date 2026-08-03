@@ -8,10 +8,10 @@ import '../../screens/login_screen.dart';
 import '../../screens/product_screen.dart';
 import '../../screens/scanner_screen.dart';
 import '../../screens/update_price_screen.dart';
+import '../../screens/settings_screen.dart';
 import '../di/app_dependencies.dart';
 import '../../screens/barcode_scanner_screen.dart';
 import '../../screens/qr_login_scanner_screen.dart';
-import '../../screens/settings_screen.dart';
 
 class AppRoutes {
   const AppRoutes._();
@@ -28,10 +28,6 @@ class AppRoutes {
     return MaterialPageRoute(
       builder: (context) => const BarcodeScannerScreen(),
     );
-  }
-
-  static MaterialPageRoute<void> settings() {
-    return MaterialPageRoute(builder: (context) => const SettingsScreen());
   }
 
   static MaterialPageRoute<String> qrLoginScanner() {
@@ -154,6 +150,14 @@ class AppRoutes {
         dependencies: dependencies,
         initialReferences: initialReferences,
       ),
+    );
+  }
+
+  static MaterialPageRoute<void> settings({
+    required AppDependencies dependencies,
+  }) {
+    return MaterialPageRoute(
+      builder: (context) => SettingsScreen(dependencies: dependencies),
     );
   }
 }

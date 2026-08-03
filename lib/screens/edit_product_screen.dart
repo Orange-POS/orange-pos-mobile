@@ -6,7 +6,7 @@ import '../core/di/app_dependencies.dart';
 import '../models/product.dart';
 import '../models/product_references.dart';
 import '../models/product_tax.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -20,6 +20,7 @@ import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
 import '../features/products/application/product_use_cases.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class EditProductScreen extends StatefulWidget {
   final Product product;
@@ -46,7 +47,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return widget.dependencies.productRepositoryFactory;
   }
 
-  AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
 
   late final TextEditingController nameController;
 
@@ -55,6 +58,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
   bool isLoadingReferences = false;
   bool isSaving = false;
   String? errorMessage;
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
+  }
 
   ProductUseCases get productUseCases {
     return productRepositoryFactory.createUseCases(
@@ -102,10 +109,19 @@ class _EditProductScreenState extends State<EditProductScreen> {
         references = loadedReferences;
         selectedTaxId = _safeSelectedTaxId();
       });
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
 
       final appError = AppError.fromException(error);
+
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'edit_product',
+          action: 'load_product_references',
+        ),
+      );
 
       setState(() {
         isLoadingReferences = false;
@@ -158,8 +174,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
       if (!mounted) return;
 
       Navigator.of(context).pop(updatedProduct);
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'edit_product',
+          action: 'update_product',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 
