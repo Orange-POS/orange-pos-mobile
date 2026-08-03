@@ -6,7 +6,7 @@ import '../core/di/app_dependencies.dart';
 import '../features/products/data/product_repository_factory.dart';
 
 import '../models/product.dart';
-import '../services/analytics_service.dart';
+import '../core/analytics/observable_analytics_service.dart';
 
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
@@ -17,6 +17,7 @@ import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
 import '../core/widgets/app_surface.dart';
 import '../features/products/application/product_use_cases.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class UpdatePriceScreen extends StatefulWidget {
   final Product product;
@@ -41,8 +42,12 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
     return widget.dependencies.productRepositoryFactory;
   }
 
-  AnalyticsService get analyticsService {
-    return widget.dependencies.analyticsService;
+  ObservableAnalyticsService get analyticsService {
+    return widget.dependencies.observableAnalyticsService;
+  }
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
   }
 
   late final TextEditingController priceController;
@@ -113,8 +118,17 @@ class _UpdatePriceScreenState extends State<UpdatePriceScreen> {
       }
 
       Navigator.pop(context, updatedProduct);
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'update_price',
+          action: 'update_product_price',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 

@@ -3,8 +3,9 @@ import 'api_client.dart';
 
 class AnalyticsService {
   final ApiClient apiClient;
+  final bool swallowFailures;
 
-  AnalyticsService({ApiClient? apiClient})
+  AnalyticsService({ApiClient? apiClient, this.swallowFailures = true})
     : apiClient = apiClient ?? ApiClient();
 
   Future<void> trackEvent({
@@ -30,6 +31,10 @@ class AnalyticsService {
         },
       );
     } catch (_) {
+      if (!swallowFailures) {
+        rethrow;
+      }
+
       // Analytics must never block app usage.
     }
   }
@@ -59,6 +64,10 @@ class AnalyticsService {
         },
       );
     } catch (_) {
+      if (!swallowFailures) {
+        rethrow;
+      }
+
       // Analytics must never block app usage.
     }
   }

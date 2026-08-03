@@ -159,3 +159,109 @@ Before adding Firebase SDKs, confirm App Store Connect privacy answers for:
 - Firebase is not installed yet.
 - No app behavior changes.
 - Analyzer and tests pass.
+# Firebase
+
+This document defines how Firebase should be integrated into OrangeONE.
+
+## Current Firebase Usage
+
+OrangeONE currently integrates Firebase packages for Crashlytics preparation:
+
+## Crashlytics Validation
+
+Crashlytics has three validation layers.
+
+### Unit Tests
+
+Automated tests cover:
+
+- Firebase startup initializes Firebase and enables Crashlytics collection.
+- Firebase startup failures are propagated to the resolver.
+- Crash reporter resolution returns Firebase reporting when startup succeeds.
+- Crash reporter resolution falls back and records the startup failure when Firebase is unavailable.
+- App startup routes Flutter framework errors to the resolved crash reporter.
+- App startup routes uncaught async errors as fatal reports.
+- Feature flag refresh still runs before the app is started.
+- Firebase crash reporter forwards Flutter, non-fatal, and fatal errors to the Crashlytics client.
+
+### Build Validation
+
+CI validates native platform setup by running:
+
+```bash
+flutter analyze
+flutter test
+flutter build apk --release --dart-define=APP_ENV=production
+flutter build ios --release --no-codesign --dart-define=APP_ENV=production
+
+## Crashlytics End-To-End Validation
+
+Crashlytics fallback keeps the app usable if Firebase startup fails, but fallback reporting alone does not prove Firebase is working.
+
+For that reason, Crashlytics must be validated in two ways.
+
+### Build-Time Validation
+
+CI must prove the native Firebase wiring is buildable:
+
+```bash
+flutter build apk --release --dart-define=APP_ENV=production
+flutter build ios --release --no-codesign --dart-define=APP_ENV=production
+## Controlled Crash Test
+
+Crashlytics can be validated with an internal-only crash trigger.
+
+The trigger is hidden by default and only appears when the app is built with:
+
+```bash
+--dart-define=ENABLE_CRASH_TEST=true
+
+## App Error Observability
+
+OrangeONE reports selected app/backend communication failures to Firebase Crashlytics as non-fatal errors through `AppErrorReporter`.
+
+Analytics failure observability also reports analytics event/error delivery failures as non-fatal errors. Analytics failures remain non-blocking for app users.
+
+Current non-fatal reporting covers:
+
+- saved session validation failures
+- QR login failures
+- product lookup failures from the scanner
+- product reference loading failures
+- product creation failures
+- product update failures
+- product price update failures
+
+Reported safe context:
+
+- screen
+- action
+- app environment
+- API endpoint path
+- HTTP status code, when available
+
+Sensitive data must not be reported:
+
+- auth tokens
+- raw QR login payloads
+- full backend URLs with sensitive query parameters
+- response bodies
+- customer-sensitive product data
+
+API errors are sanitized before reporting so Firebase receives safe diagnostic information instead of raw backend URLs or response bodies.
+
+Crashlytics should be used for crash/error visibility, not real-time operational dashboards. Console counts can be delayed or require refresh while Firebase processes events.
+
+## iOS Crashlytics Validation
+
+iOS Crashlytics uses `GoogleService-Info.plist`.
+
+The plist must not be committed to the repository. CI writes it from this GitHub secret:
+
+```text
+FIREBASE_IOS_GOOGLE_SERVICE_INFO_PLIST_BASE64
+
+```text
+firebase_core
+firebase_crashlytics
+

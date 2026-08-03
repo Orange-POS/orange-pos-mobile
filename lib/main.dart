@@ -1,35 +1,44 @@
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:flutter/material.dart';
 
-import 'app/inventory_tracker_app.dart';
+import 'app/app_startup.dart';
+import 'core/crash/crash_reporter_resolver.dart';
 import 'core/di/app_dependencies.dart';
-import 'core/providers/app_dependencies_provider.dart';
+import 'core/firebase/firebase_app_startup.dart';
+import 'services/crash_reporting_service.dart';
 
 Future<void> main() async {
-  final dependencies = AppDependencies();
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final fallbackCrashReporter = CrashReportingService();
 
   runZonedGuarded(
     () async {
-      FlutterError.onError = dependencies.crashReporter.recordFlutterError;
-
-      await dependencies.featureFlags.refreshFromProvider(
-        dependencies.featureFlagProvider,
+      final bootstrapDependencies = AppDependencies(
+        crashReporter: fallbackCrashReporter,
       );
 
-      runApp(
-        ProviderScope(
-          overrides: [appDependenciesProvider.overrideWithValue(dependencies)],
-          child: InventoryTrackerApp(dependencies: dependencies),
-        ),
+      final crashReporter = await CrashReporterResolver(
+        firebaseAppStartup: const FirebaseAppStartup(),
+        fallbackCrashReporter: fallbackCrashReporter,
+      ).resolve();
+
+      final dependencies = AppDependencies(
+        config: bootstrapDependencies.config,
+        crashReporter: crashReporter,
+      );
+
+      await startOrangeOneApp(
+        dependencies: dependencies,
+        crashReporter: crashReporter,
       );
     },
     (error, stackTrace) async {
-      await dependencies.crashReporter.recordError(
-        error,
-        stackTrace,
-        reason: 'Uncaught async error',
-        fatal: true,
+      await recordUncaughtAsyncError(
+        crashReporter: fallbackCrashReporter,
+        error: error,
+        stackTrace: stackTrace,
       );
     },
   );
