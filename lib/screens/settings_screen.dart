@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../core/di/app_dependencies.dart';
 import '../demo/demo_mode.dart';
 import '../theme/app_brand.dart';
 import '../widgets/app_chrome.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final AppDependencies dependencies;
+
+  const SettingsScreen({super.key, required this.dependencies});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -13,6 +16,10 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool demoModeEnabled = DemoMode.enabled;
+
+  void triggerControlledCrash() {
+    widget.dependencies.crashTestService.triggerTestCrash();
+  }
 
   void updateDemoMode(bool value) {
     setState(() {
@@ -51,6 +58,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 72),
+
               if (DemoMode.available)
                 Row(
                   children: [
@@ -73,33 +81,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                 ),
+
               if (DemoMode.available && demoModeEnabled) ...[
                 const SizedBox(height: 20),
-                if (DemoMode.available && demoModeEnabled) ...[
-                  const SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: AppBrand.primaryLight,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: AppBrand.primary),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppBrand.primaryLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppBrand.primary),
+                  ),
+                  child: const Text(
+                    'Demo Mode is enabled. The app will use sample products '
+                    'and will not connect to Odoo. Use this mode for Apple '
+                    'review testing without a POS server.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.35,
+                      color: AppBrand.textDarkGrey,
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
+                ),
+              ],
 
+              if (widget.dependencies.config.crashTestEnabled) ...[
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: triggerControlledCrash,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppBrand.primary,
+                      side: const BorderSide(color: AppBrand.primary),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
                     child: const Text(
-                      'Demo Mode is enabled. The app will use sample products and will not connect to Odoo. Use this mode for Apple review testing without a POS server.',
+                      'Trigger Crashlytics Test Crash',
                       style: TextStyle(
-                        fontSize: 14,
-                        height: 1.35,
-                        color: AppBrand.textDarkGrey,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                ],
-                const Spacer(),
-                const AppFooter(),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Internal testing only. This button is hidden unless '
+                  'ENABLE_CRASH_TEST=true.',
+                  style: TextStyle(
+                    fontSize: 13,
+                    height: 1.35,
+                    color: AppBrand.textDarkGrey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
+
+              const Spacer(),
+              const AppFooter(),
             ],
           ),
         ),

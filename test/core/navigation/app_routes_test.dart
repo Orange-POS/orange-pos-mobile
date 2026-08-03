@@ -251,6 +251,32 @@ void main() {
         expect(find.byType(_FakeSplashScreen), findsNothing);
       },
     );
+    testWidgets('creates settings route with dependencies', (tester) async {
+      final dependencies = AppDependencies();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              return TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    AppRoutes.settings(dependencies: dependencies),
+                  );
+                },
+                child: const Text('Open settings'),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open settings'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
   });
 }
 
