@@ -8,6 +8,7 @@ import '../core/navigation/app_routes.dart';
 import '../features/auth/application/auth_use_cases.dart';
 import '../services/analytics_service.dart';
 import '../theme/app_brand.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class SplashScreen extends StatefulWidget {
   final AppDependencies dependencies;
@@ -21,6 +22,10 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   AuthUseCases get authUseCases => widget.dependencies.authUseCases;
   AnalyticsService get analyticsService => widget.dependencies.analyticsService;
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
+  }
 
   @override
   void initState() {
@@ -43,11 +48,25 @@ class _SplashScreenState extends State<SplashScreen> {
     final token = savedSession.token;
     final backendUrl = savedSession.backendUrl;
 
-    final isValidSession = await authUseCases.validateSession(
-      token: token,
-      backendUrl: backendUrl,
-    );
+    late final bool isValidSession;
 
+    try {
+      isValidSession = await authUseCases.validateSession(
+        token: token,
+        backendUrl: backendUrl,
+      );
+    } catch (error, stackTrace) {
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'splash',
+          action: 'validate_saved_session',
+        ),
+      );
+
+      isValidSession = false;
+    }
     if (!mounted) {
       return;
     }
