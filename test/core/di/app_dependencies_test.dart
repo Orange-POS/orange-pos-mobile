@@ -12,8 +12,9 @@ import 'package:flutter_app/services/crash_reporting_service.dart';
 import 'package:flutter_app/core/feature_flags/feature_flag_provider.dart';
 import 'package:flutter_app/features/auth/application/auth_use_cases.dart';
 import 'package:flutter_app/services/api_client.dart';
-import 'package:flutter_app/core/crash/crash_reporter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter_app/core/crash/crash_test_service.dart';
+import 'package:flutter_app/core/crash/firebase_crash_test_service.dart';
+import 'package:flutter_app/core/errors/app_error_reporter.dart';
 
 void main() {
   group('AppDependencies', () {
@@ -23,6 +24,7 @@ void main() {
       expect(dependencies.config.appName, 'OrangeONE');
       expect(dependencies.config.isProduction, true);
       expect(dependencies.featureFlags.isDemoModeAvailable, true);
+      expect(dependencies.appErrorReporter, isA<AppErrorReporter>());
     });
 
     test('uses feature flags from provided config', () {
@@ -30,6 +32,7 @@ void main() {
         appName: 'OrangeONE Dev',
         environment: AppEnvironment.development,
         featureFlags: FeatureFlags.disabled(),
+        crashTestEnabled: false,
       );
 
       final dependencies = AppDependencies(config: config);
@@ -132,24 +135,31 @@ void main() {
       expect(dependencies.config.appName, 'OrangeONE Staging');
     });
 
-    test('uses injected crash reporter', () {
-      final crashReporter = _FakeCrashReporter();
-      final dependencies = AppDependencies(crashReporter: crashReporter);
+    test('uses disabled crash test service by default', () {
+      final dependencies = AppDependencies();
 
-      expect(dependencies.crashReporter, same(crashReporter));
+      expect(dependencies.crashTestService, isA<DisabledCrashTestService>());
+    });
+
+    test('uses Firebase crash test service when crash testing is enabled', () {
+      final dependencies = AppDependencies(
+        config: const AppConfig.production(crashTestEnabled: true),
+      );
+
+      expect(dependencies.crashTestService, isA<FirebaseCrashTestService>());
+    });
+
+    test('app error reporter reuses crash reporter and config', () {
+      final crashReporter = CrashReportingService();
+      const config = AppConfig.staging();
+
+      final dependencies = AppDependencies(
+        config: config,
+        crashReporter: crashReporter,
+      );
+
+      expect(dependencies.appErrorReporter.crashReporter, same(crashReporter));
+      expect(dependencies.appErrorReporter.config, same(config));
     });
   });
-}
-
-class _FakeCrashReporter implements CrashReporter {
-  @override
-  Future<void> recordFlutterError(FlutterErrorDetails details) async {}
-
-  @override
-  Future<void> recordError(
-    Object error,
-    StackTrace? stackTrace, {
-    String? reason,
-    bool fatal = false,
-  }) async {}
 }

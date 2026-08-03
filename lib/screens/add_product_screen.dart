@@ -16,6 +16,7 @@ import '../core/widgets/app_button.dart';
 import '../core/widgets/app_text_field.dart';
 import '../core/widgets/app_error_state.dart';
 import '../features/products/application/product_use_cases.dart';
+import '../core/errors/app_error_reporter.dart';
 
 class AddProductScreen extends StatefulWidget {
   final String barcode;
@@ -42,6 +43,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   ProductRepositoryFactory get productRepositoryFactory {
     return widget.dependencies.productRepositoryFactory;
+  }
+
+  AppErrorReporter get appErrorReporter {
+    return widget.dependencies.appErrorReporter;
   }
 
   ProductReferences references = const ProductReferences();
@@ -94,8 +99,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
         selectedTaxId = hasDefaultTax ? defaultTaxId : null;
         isLoadingReferences = false;
       });
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'add_product',
+          action: 'load_product_references',
+        ),
+      );
 
       setState(() {
         references = const ProductReferences();
@@ -154,8 +168,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
       if (!mounted) return;
 
       Navigator.pop(context, createdProduct);
-    } catch (error) {
+    } catch (error, stackTrace) {
       if (!mounted) return;
+
+      unawaited(
+        appErrorReporter.reportError(
+          error,
+          stackTrace,
+          screen: 'add_product',
+          action: 'create_product',
+        ),
+      );
 
       final appError = AppError.fromException(error);
 

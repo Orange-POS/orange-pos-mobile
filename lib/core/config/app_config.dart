@@ -6,24 +6,26 @@ class AppConfig {
   final String appName;
   final AppEnvironment environment;
   final FeatureFlags featureFlags;
+  final bool crashTestEnabled;
 
   const AppConfig({
     required this.appName,
     required this.environment,
     required this.featureFlags,
+    required this.crashTestEnabled,
   });
 
-  const AppConfig.production()
+  const AppConfig.production({this.crashTestEnabled = false})
     : appName = 'OrangeONE',
       environment = AppEnvironment.production,
       featureFlags = const FeatureFlags.production();
 
-  const AppConfig.development()
+  const AppConfig.development({this.crashTestEnabled = false})
     : appName = 'OrangeONE Dev',
       environment = AppEnvironment.development,
       featureFlags = const FeatureFlags.disabled();
 
-  const AppConfig.staging()
+  const AppConfig.staging({this.crashTestEnabled = false})
     : appName = 'OrangeONE Staging',
       environment = AppEnvironment.staging,
       featureFlags = const FeatureFlags.production();
@@ -33,12 +35,19 @@ class AppConfig {
       'APP_ENV',
       defaultValue: 'production',
     ),
+    bool crashTestEnabled = const bool.fromEnvironment(
+      'ENABLE_CRASH_TEST',
+      defaultValue: false,
+    ),
   }) {
     return switch (environmentName.toLowerCase()) {
-      'development' || 'dev' => const AppConfig.development(),
-      'staging' || 'stage' => const AppConfig.staging(),
-      'production' || 'prod' => const AppConfig.production(),
-      _ => const AppConfig.production(),
+      'development' ||
+      'dev' => AppConfig.development(crashTestEnabled: crashTestEnabled),
+      'staging' ||
+      'stage' => AppConfig.staging(crashTestEnabled: crashTestEnabled),
+      'production' ||
+      'prod' => AppConfig.production(crashTestEnabled: crashTestEnabled),
+      _ => AppConfig.production(crashTestEnabled: crashTestEnabled),
     };
   }
 
