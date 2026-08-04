@@ -1,17 +1,23 @@
+import 'dart:async';
+
 import '../../../models/qr_login_data.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/session_service.dart';
 import '../../../services/token_storage.dart';
 
+enum SessionValidationResult { valid, invalid, unavailable }
+
 class AuthUseCases {
   final AuthService authService;
   final SessionService sessionService;
   final TokenStorage tokenStorage;
+  final Duration sessionValidationTimeout;
 
   const AuthUseCases({
     required this.authService,
     required this.sessionService,
     required this.tokenStorage,
+    this.sessionValidationTimeout = const Duration(seconds: 5),
   });
 
   Future<String> loginWithQr(QrLoginData loginData) async {
@@ -32,14 +38,23 @@ class AuthUseCases {
     return SavedSession(token: token, backendUrl: backendUrl);
   }
 
-  Future<bool> validateSession({
+  Future<SessionValidationResult> validateSession({
     required String token,
     required String backendUrl,
-  }) {
-    return sessionService.validateSession(
-      authToken: token,
-      backendUrl: backendUrl,
-    );
+  }) async {
+    try {
+      final isValid = await sessionService
+          .validateSession(authToken: token, backendUrl: backendUrl)
+          .timeout(sessionValidationTimeout);
+
+      return isValid
+          ? SessionValidationResult.valid
+          : SessionValidationResult.invalid;
+    } on TimeoutException {
+      return SessionValidationResult.unavailable;
+    } catch (_) {
+      return SessionValidationResult.unavailable;
+    }
   }
 
   Future<void> clearSession() {

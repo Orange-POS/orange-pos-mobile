@@ -13,16 +13,27 @@ class SessionService {
     try {
       final responseData = await apiClient.postJson(
         baseUrl: backendUrl,
-        endpoint: ApiConfig.pingEndpoint,
+        endpoint: ApiConfig.sessionValidateEndpoint,
         authToken: authToken,
         body: {'jsonrpc': '2.0', 'params': {}},
       );
 
       final result = responseData['result'] as Map<String, dynamic>?;
+      final valid = result?['valid'];
 
-      return result != null && result['ok'] == true;
-    } catch (_) {
-      return false;
+      if (valid is bool) {
+        return valid;
+      }
+
+      throw const FormatException(
+        'Session validation response did not include a valid flag.',
+      );
+    } on ApiClientException catch (error) {
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        return false;
+      }
+
+      rethrow;
     }
   }
 }
