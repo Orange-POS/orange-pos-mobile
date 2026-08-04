@@ -10,6 +10,8 @@ import '../config/app_config.dart';
 import '../feature_flags/feature_flag_controller.dart';
 import '../feature_flags/feature_flag_provider.dart';
 import '../crash/crash_reporter.dart';
+import '../crash/crash_test_service.dart';
+import '../crash/firebase_crash_test_service.dart';
 
 class AppDependencies {
   final AppConfig config;
@@ -23,6 +25,7 @@ class AppDependencies {
   final FeatureFlagProvider featureFlagProvider;
   final AuthUseCases authUseCases;
   final ApiClient apiClient;
+  final CrashTestService crashTestService;
 
   factory AppDependencies({
     AppConfig? config,
@@ -36,6 +39,7 @@ class AppDependencies {
     TokenStorage? tokenStorage,
     CrashReporter? crashReporter,
     AuthUseCases? authUseCases,
+    CrashTestService? crashTestService,
   }) {
     final resolvedApiClient = apiClient ?? ApiClient();
     final resolvedAuthService =
@@ -44,6 +48,11 @@ class AppDependencies {
         sessionService ?? SessionService(apiClient: resolvedApiClient);
     final resolvedTokenStorage = tokenStorage ?? TokenStorage.instance;
     final resolvedConfig = config ?? AppConfig.fromEnvironment();
+    final resolvedCrashTestService =
+        crashTestService ??
+        (resolvedConfig.crashTestEnabled
+            ? FirebaseCrashTestService()
+            : const DisabledCrashTestService());
     return AppDependencies._(
       config: resolvedConfig,
       featureFlags:
@@ -68,6 +77,7 @@ class AppDependencies {
             sessionService: resolvedSessionService,
             tokenStorage: resolvedTokenStorage,
           ),
+      crashTestService: resolvedCrashTestService,
     );
   }
 
@@ -83,5 +93,6 @@ class AppDependencies {
     required this.tokenStorage,
     required this.crashReporter,
     required this.authUseCases,
+    required this.crashTestService,
   });
 }

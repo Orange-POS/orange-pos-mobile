@@ -26,6 +26,7 @@ void main() {
         appName: 'OrangeONE Test',
         environment: AppEnvironment.development,
         featureFlags: FeatureFlags.disabled(),
+        crashTestEnabled: false,
       ),
     );
 

@@ -159,6 +159,10 @@ Before adding Firebase SDKs, confirm App Store Connect privacy answers for:
 - Firebase is not installed yet.
 - No app behavior changes.
 - Analyzer and tests pass.
+<<<<<<< HEAD
+=======
+- Analyzer and tests pass.
+>>>>>>> 0278370 (Add controlled Crashlytics test trigger)
 # Firebase
 
 This document defines how Firebase should be integrated into OrangeONE.
@@ -207,7 +211,16 @@ CI must prove the native Firebase wiring is buildable:
 ```bash
 flutter build apk --release --dart-define=APP_ENV=production
 flutter build ios --release --no-codesign --dart-define=APP_ENV=production
+## Controlled Crash Test
+
+Crashlytics can be validated with an internal-only crash trigger.
+
+The trigger is hidden by default and only appears when the app is built with:
+
+```bash
+--dart-define=ENABLE_CRASH_TEST=true
 
 ```text
 firebase_core
 firebase_crashlytics
+
